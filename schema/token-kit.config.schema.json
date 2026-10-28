@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "token-kit.config.schema.json",
+  "title": "token-kit configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string",
+      "description": "Name written into exported bundles."
+    },
+    "tokens": {
+      "type": "string",
+      "description": "Path of the DTCG token file.",
+      "default": "tokens/tokens.json"
+    },
+    "outDir": {
+      "type": "string",
+      "description": "Directory for generated outputs.",
+      "default": "src/styles/tokens"
+    },
+    "formats": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Built-in formats (css-variables, tailwind-v4, typescript) or paths to custom format modules relative to this config."
+    },
+    "cssPrefix": {
+      "type": "string",
+      "default": ""
+    },
+    "tailwindNamespace": {
+      "type": "string",
+      "default": "tk"
+    },
+    "tiers": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Tier model in match order. A token belongs to the first tier whose match fits; a tier without match conditions catches the rest.",
+      "items": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "label": {
+            "type": "string",
+            "description": "Figma collection name."
+          },
+          "match": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "roots": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "prefixes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "literal": {
+                "type": "boolean"
+              }
+            }
+          },
+          "references": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allowPrefixes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "literals": {
+            "type": "boolean",
+            "description": "May hold literal values."
+          },
+          "families": {
+            "type": "boolean",
+            "description": "First path segment is a family (components)."
+          },
+          "internal": {
+            "type": "boolean",
+            "description": "Never read by product code."
+          },
+          "themes": {
+            "type": "boolean",
+            "description": "May carry theme overrides (default true)."
+          }
+        }
+      }
+    },
+    "themes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "root"
+        ],
+        "properties": {
+          "root": {
+            "type": "string"
+          },
+          "mediaQuery": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "primaryScaleRoles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "contrastPairs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "foreground",
+          "background"
+        ],
+        "properties": {
+          "foreground": {
+            "type": "string"
+          },
+          "background": {
+            "type": "string"
+          },
+          "min": {
+            "type": "number",
+            "default": 4.5
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "requireDescriptions": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "primitive",
+          "scale",
+          "basic",
+          "component"
+        ]
+      }
+    },
+    "technicalValues": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "roots": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "extensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ignore": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowedVars": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "baselines": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ratchet": {
+          "type": "string"
+        },
+        "knownErrors": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

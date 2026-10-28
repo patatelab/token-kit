@@ -1,0 +1,115 @@
+<style>
+  :root { color-scheme: light dark; font: 12px/1.45 Inter, system-ui, sans-serif; }
+  body { margin: 0; padding: 12px; background: var(--figma-color-bg); color: var(--figma-color-text); }
+  h1 { font-size: 13px; margin: 0 0 4px; }
+  p { margin: 0 0 8px; color: var(--figma-color-text-secondary); }
+  .row { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+  button, label.button { font: inherit; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--figma-color-border); background: var(--figma-color-bg-secondary); color: inherit; cursor: pointer; }
+  button.primary { background: var(--figma-color-bg-brand); color: var(--figma-color-text-onbrand); border-color: transparent; }
+  button:disabled { opacity: .5; cursor: default; }
+  input[type=file] { display: none; }
+  #summary { font-weight: 600; margin: 8px 0; }
+  #summary.ok { color: var(--figma-color-text-success); }
+  #summary.fail { color: var(--figma-color-text-danger); }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li { padding: 6px 0; border-top: 1px solid var(--figma-color-border); }
+  .rule { font-family: ui-monospace, monospace; font-size: 11px; }
+  .error .rule { color: var(--figma-color-text-danger); }
+  .review .rule { color: var(--figma-color-text-warning); }
+  .hint { color: var(--figma-color-text-secondary); }
+  code { font-family: ui-monospace, monospace; font-size: 11px; }
+</style>
+
+<h1>Token Kit</h1>
+<p id="status">Noch kein Bundle importiert.</p>
+
+<div class="row">
+  <label class="button" for="file">Bundle importieren…</label>
+  <input id="file" type="file" accept=".json,application/json" />
+  <button id="check">Tokens prüfen</button>
+  <button id="export" class="primary">Exportieren</button>
+</div>
+
+<div id="summary"></div>
+<ul id="findings"></ul>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const post = (msg) => parent.postMessage({ pluginMessage: msg }, "*");
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+  function setSummary(text, ok) {
+    const el = $("summary");
+    el.textContent = text;
+    el.className = ok === undefined ? "" : ok ? "ok" : "fail";
+  }
+
+  function showFindings(findings, created) {
+    const items = findings.map(
+      (f) => `<li class="${f.severity}"><div class="rule">${esc(f.rule)} · ${f.severity === "error" ? "Fehler" : "Review"}</div>
+        <div><code>${esc(f.subject)}</code> ${esc(f.message)}</div><div class="hint">${esc(f.suggestion)}</div></li>`,
+    );
+    if (created && created.length)
+      items.unshift(`<li class="review"><div class="rule">NEUE TOKENS · Freigabe nötig</div><div>${created.map((p) => `<code>${esc(p)}</code>`).join(", ")}</div>
+        <div class="hint">Neue Variablen gehen als Vorschlag ins Repo und brauchen dort eine Freigabe.</div></li>`);
+    $("findings").innerHTML = items.join("");
+  }
+
+  $("file").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      setSummary("Importiere…");
+      post({ type: "import", bundle: JSON.parse(await file.text()) });
+    } catch (error) {
+      setSummary("Datei ist kein gültiges JSON.", false);
+    }
+    event.target.value = "";
+  });
+  $("check").onclick = () => { setSummary("Prüfe…"); post({ type: "check" }); };
+  $("export").onclick = () => { setSummary("Prüfe und exportiere…"); post({ type: "export" }); };
+
+  function download(bundle) {
+    const blob = new Blob([JSON.stringify(bundle, null, 2) + "\n"], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `figma.tokens.bundle.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  onmessage = ({ data }) => {
+    const msg = data.pluginMessage;
+    if (!msg) return;
+    if (msg.type === "status" && msg.meta)
+      $("status").textContent = `Importiert ${new Date(msg.meta.importedAt).toLocaleString()} aus ${msg.meta.source?.tool ?? "?"}${msg.meta.source?.commit ? " @ " + msg.meta.source.commit : ""}.`;
+    if (msg.type === "imported") {
+      if (!msg.result.ok) {
+        setSummary("Import abgelehnt: " + msg.result.errors.join("; "), false);
+        return;
+      }
+      setSummary(`Import fertig: ${msg.result.variables} Variablen.` + (msg.result.unmapped ? ` ${msg.result.unmapped} Theme-Overrides ohne Basis-Token bleiben unverändert erhalten.` : ""), true);
+      $("findings").innerHTML = "";
+      post({ type: "status" });
+    }
+    if (msg.type === "checked") {
+      const errors = msg.findings.filter((f) => f.severity === "error").length;
+      const reviews = msg.findings.length - errors;
+      const ok = msg.findings.length === 0;
+      const frozen = msg.frozen ? ` (${msg.frozen} bekannte Befunde aus den Baselines ausgeblendet)` : "";
+      setSummary(
+        `${msg.count} Tokens geprüft: ${errors} Fehler, ${reviews} neue Reviews${frozen}.` + (msg.blocked ? " Export gesperrt, bis die Befunde behoben sind." : ok ? " Konform." : ""),
+        ok,
+      );
+      showFindings(msg.findings, msg.created);
+    }
+    if (msg.type === "exported") {
+      download(msg.bundle);
+      setSummary(`Exportiert: ${Object.keys(msg.bundle.tokens).length} Tokens, konform. Datei per PR ins Repo legen.`, true);
+      showFindings(msg.findings, msg.created);
+    }
+    if (msg.type === "error") setSummary("Fehler: " + msg.message, false);
+  };
+
+  post({ type: "status" });
+</script>

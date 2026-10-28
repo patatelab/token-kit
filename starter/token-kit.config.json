@@ -1,0 +1,136 @@
+{
+  "$schema": "../schema/token-kit.config.schema.json",
+  "project": "my-react-app",
+  "tokens": "tokens/tokens.json",
+  "outDir": "src/styles/tokens",
+  "formats": [
+    "css-variables",
+    "typescript"
+  ],
+  "cssPrefix": "",
+  "tiers": [
+    {
+      "name": "primitive",
+      "label": "Primitives",
+      "match": {
+        "roots": [
+          "foundations"
+        ],
+        "literal": true
+      },
+      "references": [],
+      "literals": true,
+      "internal": true
+    },
+    {
+      "name": "scale",
+      "label": "Scale",
+      "match": {
+        "roots": [
+          "foundations"
+        ]
+      },
+      "references": [
+        "primitive",
+        "scale"
+      ],
+      "internal": true
+    },
+    {
+      "name": "basic",
+      "label": "Basic",
+      "match": {
+        "prefixes": [
+          "color",
+          "space",
+          "radius",
+          "stroke",
+          "text",
+          "motion",
+          "shadow",
+          "opacity"
+        ]
+      },
+      "references": [
+        "scale",
+        "primitive"
+      ]
+    },
+    {
+      "name": "component",
+      "label": "Component",
+      "match": {},
+      "references": [
+        "basic"
+      ],
+      "families": true,
+      "themes": false
+    }
+  ],
+  "themes": {
+    "dark": {
+      "root": "dark-mode",
+      "mediaQuery": "(prefers-color-scheme: dark)",
+      "selector": "[data-theme=\"dark\"]"
+    }
+  },
+  "primaryScaleRoles": {
+    "spacing.1": "space.inline-gap",
+    "spacing.2": "space.component-gap",
+    "spacing.4": "space.gutter",
+    "spacing.6": "space.section"
+  },
+  "contrastPairs": [
+    {
+      "foreground": "color.text.default",
+      "background": "color.background.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.text.muted",
+      "background": "color.background.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.text.inverse",
+      "background": "color.background.inverse",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.brand.on-primary",
+      "background": "color.brand.primary",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.feedback.error",
+      "background": "color.background.default",
+      "min": 4.5
+    }
+  ],
+  "requireDescriptions": [
+    "basic",
+    "component"
+  ],
+  "source": {
+    "roots": [
+      "src"
+    ],
+    "extensions": [
+      ".css",
+      ".scss",
+      ".tsx",
+      ".jsx"
+    ],
+    "ignore": [
+      "node_modules",
+      "dist",
+      "build",
+      ".next",
+      "tokens"
+    ]
+  },
+  "baselines": {
+    "ratchet": "tokens/baselines/open-review-ratchet.json",
+    "knownErrors": "tokens/baselines/known-errors.json"
+  }
+}

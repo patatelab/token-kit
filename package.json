@@ -1,0 +1,21 @@
+{
+  "name": "token-kit",
+  "version": "0.1.0",
+  "description": "Design tokens with tiers, conformity checks, a shrink-only review ratchet, bundle export/import, Copilot prompts and a Figma plugin.",
+  "type": "module",
+  "bin": { "token-kit": "bin/token-kit.mjs" },
+  "exports": {
+    "./core": "./src/core/index.mjs",
+    "./formats/*": "./src/node/formats/*.mjs",
+    "./css-value": "./src/node/css-value.mjs"
+  },
+  "files": ["bin", "src", "schema", "starter", "copilot", "templates", "docs"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "figma:build": "node figma-plugin/build.mjs",
+    "check:figma": "node figma-plugin/build.mjs --check"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}
