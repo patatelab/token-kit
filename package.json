@@ -1,6 +1,6 @@
 {
   "name": "token-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Design tokens with tiers, conformity checks, a shrink-only review ratchet, bundle export/import, Copilot prompts and a Figma plugin.",
   "type": "module",
   "bin": { "token-kit": "bin/token-kit.mjs" },

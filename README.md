@@ -9,6 +9,7 @@ Design-Tokens mit klaren Ebenen, Konformitätsprüfung, Shrink-only-Ratchet, Exp
 | Beispiel-Tokens | `starter/` | nach der Token-Richtlinie: Primitive → Semantic → Component, Light/Dark, Kontrastpaare |
 | Copilot | `copilot/` | `copilot-instructions.md`, Instructions für CSS/TSX, Prompts `/token-export`, `/token-import`, `/token-propose`, `/token-audit` |
 | Figma-Plugin | `figma-plugin/` | Bundle als Variables importieren, global ändern, „Tokens prüfen“, konform exportieren |
+| Änderungen | `CHANGELOG.md` | Was sich je Version geändert hat, inkl. Entscheidungen und Migration |
 | Regeln | `docs/token-contract.md` | Token-Richtlinie (Ebenen, Namensschema) und der Vertrag, den `check` durchsetzt |
 | Vorlagen | `templates/` | GitHub Action für den Token-Check, Audit-Bericht R001… |
 
