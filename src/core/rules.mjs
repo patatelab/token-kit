@@ -9,22 +9,24 @@ export const RULES = {
   TOKEN_TYPE_MISSING: "Every token has a $type (directly or inherited from its group).",
   TOKEN_REF_MISSING: "Every reference points to an existing token.",
   TOKEN_REF_CYCLE: "References never form a cycle, in any theme.",
-  TOKEN_TIER_CHAIN: "Each tier references only the tiers its config allows (default: Component -> Basic -> Scale/Primitive). No skipping, no foreign families.",
-  TOKEN_RAW_VALUE: "Only tiers with literals: true (default: Primitives) hold literal values; the others reference tokens.",
+  TOKEN_TIER_CHAIN: "Each token references only the next higher tier (default: Component -> Semantic -> Primitive). No skipping, no foreign families.",
+  TOKEN_RAW_VALUE: "Only tiers with literals: true (default: Primitive) hold RAW values; the others reference tokens.",
   TOKEN_TYPE_MISMATCH: "An alias has the same $type as its target.",
   TOKEN_THEME_ORPHAN: "A theme override has a base (light) token.",
   TOKEN_THEME_OVERRIDE: "Tiers with themes: false (default: Component) inherit themes from the roles they reference.",
-  TOKEN_NAME_LITERAL: "Names describe the role, never the value (no px, hex, raw, scale-step suffixes).",
-  TOKEN_SCALE_ALIAS_DUPLICATE: "Each Scale step has exactly one primary Basic role.",
-  TOKEN_DESCRIPTION_MISSING: "Basic and Component tokens carry a $description.",
+  TOKEN_NAME_LITERAL: "Names describe the role, never the value (no px, hex, raw; numeric scale steps only in Primitives).",
+  TOKEN_NAME_STRUCTURE: "Names start with a category the tier allows (naming.categories), e.g. color-, spacing-, font-size-.",
+  TOKEN_ROLE_DUPLICATE: "Each configured Primitive step has exactly one primary Semantic role (primaryRoles).",
+  TOKEN_DESCRIPTION_MISSING: "Semantic and Component tokens carry a $description.",
   TOKEN_CONTRAST: "Configured text/background pairs meet their WCAG contrast minimum in every theme.",
-  TOKEN_CONTRACT: "$extensions contracts (basicAliases, componentContexts) are complete and valid.",
+  TOKEN_CONTRACT: "$extensions contracts (semanticAliases, componentContexts) are complete and valid.",
 };
 
 const KEY_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-// Names that encode a value: raw/literal leaves, units, hex codes, scale-step suffixes.
-const LITERAL_NAME =
-  /(?:^|[.-])(?:raw|literal)(?:-|$)|\d+(?:px|rem|percent|em|ch|deg)(?:$|[.-])|(?:^|[.-])hex-[0-9a-f]{3,8}(?:$|[.-])|(?:^|[.-])spacing-\d+(?:$|[.-])|(?:^|[.-])type-(?:size|weight|leading|letter-spacing|text-case)-[a-z0-9-]+$|(?:^|[.-])(?:size|width|height)-\d{2,}$/;
+// Names that encode a value: raw/literal leaves, units, hex codes.
+const LITERAL_NAME = /(?:^|[.-])(?:raw|literal)(?:-|$)|\d+(?:px|rem|percent|em|ch|deg)(?:$|[.-])|(?:^|[.-])hex-[0-9a-f]{3,8}(?:$|[.-])/;
+// Numeric scale steps (color-blue-500, size-200) belong to Primitives; roles use words (md, strong).
+const STEP_NAME = /(?:^|[.-])\d{2,}(?:$|[.-])|(?:^|[.-])(?:spacing|space|size|width|height)[.-]\d+(?:$|[.-])/;
 
 function finding(rule, severity, subject, message, suggestion) {
   return { rule, severity, subject, message, suggestion: suggestion ?? RULES[rule] };
@@ -81,7 +83,7 @@ function allowedReference(config, contracts, e, target) {
   if (tier.allowPrefixes?.some((p) => target.path === p || target.path.startsWith(p.endsWith(".") ? p : p + "."))) return true;
   if (target.tier === e.tier) {
     if (tier.families && target.family === e.family) return true;
-    if (contracts.basicAliases?.[e.path]?.target === target.path) return true;
+    if (contracts.semanticAliases?.[e.path]?.target === target.path) return true;
     if (tier.families && target.family) {
       const leaf = target.path.slice(target.family.length + 1);
       if (contracts.componentContexts?.[target.family]?.consumers?.[e.family]?.includes(leaf)) return true;
@@ -147,18 +149,23 @@ export function checkModel(index, config, tree = null) {
       findings.push(finding("TOKEN_TYPE_MISMATCH", "review", themed, `${e.type} aliases ${target.type} {${alias}}`));
 
     if (e.theme === "light") {
-      if (LITERAL_NAME.test(e.path)) findings.push(finding("TOKEN_NAME_LITERAL", "error", e.path, "name encodes a value"));
+      if (LITERAL_NAME.test(e.path) || (!subjectTier?.literals && STEP_NAME.test(e.path)))
+        findings.push(finding("TOKEN_NAME_LITERAL", "error", e.path, "name encodes a value"));
+      const categories = subjectTier?.naming?.categories;
+      const name = e.path.split(".").join("-");
+      if (categories?.length && !categories.some((c) => name === c || name.startsWith(c + "-")))
+        findings.push(finding("TOKEN_NAME_STRUCTURE", "error", e.path, `"${name}" starts with no ${subject.tier} category`, `Start with one of: ${categories.join(", ")}.`));
       if (config.requireDescriptions.includes(e.tier) && !e.description)
         findings.push(finding("TOKEN_DESCRIPTION_MISSING", "review", e.path, "no $description"));
     }
   }
 
-  // One primary Basic role per Scale step.
-  for (const [step, primary] of Object.entries(config.primaryScaleRoles ?? {})) {
+  // One primary Semantic role per configured Primitive step.
+  for (const [step, primary] of Object.entries(config.primaryRoles ?? {})) {
     const domain = primary.split(".")[0] + ".";
     for (const e of light.values())
       if (e.tier === light.get(primary)?.tier && e.path !== primary && e.path.startsWith(domain) && aliasOf(e.value) === step)
-        findings.push(finding("TOKEN_SCALE_ALIAS_DUPLICATE", "error", e.path, `second Basic alias of ${step}`, `Use ${primary}.`));
+        findings.push(finding("TOKEN_ROLE_DUPLICATE", "error", e.path, `second ${e.tier} alias of ${step}`, `Use ${primary}.`));
   }
 
   for (const theme of themeNames(config)) {
@@ -179,9 +186,9 @@ export function checkModel(index, config, tree = null) {
     }
   }
 
-  for (const [path, alias] of Object.entries(contracts.basicAliases ?? {}))
+  for (const [path, alias] of Object.entries(contracts.semanticAliases ?? {}))
     if (!alias?.reason || !light.has(path) || !light.has(alias?.target))
-      findings.push(finding("TOKEN_CONTRACT", "error", `basicAliases.${path}`, "needs an existing source, target and a reason"));
+      findings.push(finding("TOKEN_CONTRACT", "error", `semanticAliases.${path}`, "needs an existing source, target and a reason"));
   for (const [owner, ctx] of Object.entries(contracts.componentContexts ?? {}))
     if (!ctx?.reason || !isPlainObject(ctx.consumers) || !Object.keys(ctx.consumers).length)
       findings.push(finding("TOKEN_CONTRACT", "error", `componentContexts.${owner}`, "needs a reason and consumers"));

@@ -8,42 +8,73 @@
 
 ## Tiers and the reference chain
 
-The tier model is configuration (`tiers` in `token-kit.config.json`), not code. Any number of tiers works; a token belongs to the first tier whose `match` fits (`roots`, `prefixes`, `paths`, `literal`), and each tier says which tiers it may reference. The default:
+The token guideline defines three tiers on top of the RAW values. Each token references only the next higher tier:
 
-| Tier | Match | Holds | May reference |
-| --- | --- | --- | --- |
-| Primitive | in `foundations`, literal | literal values | nothing |
-| Scale | in `foundations`, alias | aliases | Primitives, Scales |
-| Basic | `color.*`, `space.*`, `radius.*`, `stroke.*`, `text.*`, `motion.*`, `shadow.*`, `opacity.*` | roles with Light/Dark | Scales, Primitives; another Basic role only via `$extensions.basicAliases` |
-| Component | everything else; family = first path segment | component optics | Basic roles, own family, other families only via `$extensions.componentContexts` |
+```text
+RAW value   #DC2626               16px                Alpha 50
+Primitive   color-red-600         radius-500          opacity-500               Foundation Collection
+Semantic    color-error-default   radius-md           opacity-disabled          Alias Collection
+Component   snackbar-bg-error     button-radius-md    button-opacity-disabled   Control Collection
+```
 
-A leaner model, e.g. `core` → `semantic` → `component`, is three entries with `prefixes`. Tier flags: `literals` (may hold literal values), `families`, `internal` (never read by product code), `themes: false` (inherits themes), `allowPrefixes` (extra reference targets).
+| Tier | Figma collection | Stored under | Holds | May reference |
+| --- | --- | --- | --- | --- |
+| Primitive | Foundation Collection | `primitive` | RAW values (hex, rem, ms, numbers), never consumed by product code | nothing |
+| Semantic | Alias Collection | `semantic` | meaning: usage, role, intent, scale; Light/Dark | Primitives only; another Semantic token only via `$extensions.semanticAliases` |
+| Component | Control Collection | everything else; family = component | component properties per variant, state and size | Semantic tokens and its own family; other families only via `$extensions.componentContexts` |
 
-- `TOKEN_TIER_CHAIN` — a reference the tier model does not allow.
-- `TOKEN_RAW_VALUE` — a literal in a tier without `literals` (except `technicalValues` such as `0`, `none`, `transparent`).
+The tier model is configuration (`tiers` in `token-kit.config.json`), not code. A token belongs to the first tier whose `match` fits (`roots`, `prefixes`, `paths`, `literal`); each tier says which tiers it may reference. Tier flags: `literals` (may hold RAW values), `families`, `internal` (never read by product code), `themes: false` (inherits themes), `allowPrefixes`, `naming.categories`.
+
+- `TOKEN_TIER_CHAIN` — a reference the tier model does not allow (skipping a tier, a Primitive referencing a Primitive, a Component referencing a Primitive).
+- `TOKEN_RAW_VALUE` — a RAW value outside the Primitive tier (except `technicalValues` such as `0`, `none`, `transparent`).
 - `TOKEN_REF_MISSING`, `TOKEN_REF_CYCLE` — checked across all tokens and every effective theme, including composite values and `var(--…)` inside values.
 - `TOKEN_TYPE_MISSING`, `TOKEN_TYPE_MISMATCH` (review) — every token has a type; an alias matches its target's type.
-- `TOKEN_KEY_SYNTAX` — keys are lowercase kebab-case.
 
-Groups marked `"$extensions": {"pathSkip": true}` do not appear in token names: `foundations.size.4` is referenced as `{size.4}` and emitted as `--size-4`.
+The tier roots `primitive` and `semantic` are groups marked `"$extensions": {"pathSkip": true}`, so they do not appear in names: `primitive.color.blue.500` is referenced as `{color.blue.500}`, emitted as `--color-blue-500` and shown in Figma as `color/blue/500`.
+
+## Naming
+
+Names are lowercase and hyphen-separated (`TOKEN_KEY_SYNTAX`); each name part is one group level in the token file. A name is built from these parts, in this order; parts that add nothing are left out, as long as the name stays unique.
+
+| Tier | Structure | Examples |
+| --- | --- | --- |
+| Primitive | Category-Property-Variant-Scale | `color-blue-500`, `size-200`, `font-family-mark-pro`, `opacity-500`, `radius-500`, `border-200` |
+| Semantic | Category-Property-Variant-Scale | `color-text-supplementary`, `color-primary-default`, `color-primary-strong`, `opacity-disabled`, `radius-md` |
+| Component | (Group-)Component-Property-Variant-State-Scale | `button-bg-primary-default`, `button-padding-x-md`, `button-icon-primary-hover`, `button-text-primary-disabled` |
+
+**Primitive categories** (RAW values): `color`, `font-family`, `font-weight`, `font-size`, `line-height`, `letter-spacing`, `size`, `space`, `radius`, `border` (width), `shadow`, `opacity`, `elevation`, `breakpoint`, `motion`, `z-index`. Scales are numeric: colour 050, 100–900, 950 with 500 as the medium step; dimensions in hundreds (`size-200`, `radius-500`).
+
+**Semantic categories**: Color, Dimension (`spacing`, `radius`, `border-width`), Effect (`opacity`, `blur`, `shadow`), Typography (`font-family`, `font-size`, `font-weight`, `line-height`, `letter-spacing`), plus `motion`, `z-index`, `elevation`, `breakpoint`. Colour is split into four areas:
+
+- **Brand** (`color-brand-*`): fixed brand colours for logos, graphics, illustrations; largely independent of themes.
+- **Usage** (`color-bg-*`, `color-text-*`, `color-border-*`, `color-icon-*`): the concrete purpose in the UI.
+- **Role** (`color-primary-*`, `color-secondary-*`, `color-tertiary-*`): visual hierarchy, with `on-<role>` for content on that colour.
+- **Intent** (`color-success-*`, `color-warning-*`, `color-error-*`, `color-info-*`): system feedback.
+
+Semantic scales are words: `default`, `strong`, `weak` for intensity, `xs`–`xl` (`sm`, `md`, `lg`) for size, or a purpose (`disabled`, `overlay`). Numeric steps belong to Primitives.
+
+**Component parts**: Group (optional, e.g. Action, Feedback, Navigation; usually left out), Component (`button`, `snackbar`), Property (`bg`, `text`, `border`, `icon`, `radius`, `padding-x`), Variant (`primary`, `secondary`, `tertiary`, or an intent such as `error`), State (`default`, `hover`, `pressed`, `focus`, `disabled`), Scale (`sm`, `md`, `lg`).
+
+- `TOKEN_NAME_STRUCTURE` — a Primitive or Semantic name does not start with a category of its tier (`naming.categories`).
+- `TOKEN_NAME_LITERAL` — a name encodes a value: `raw-`, `literal-`, units, hex codes everywhere; numeric scale steps (`spacing-200`, `color-text-500`) outside Primitives.
 
 ## Themes
 
-Theme overrides live under the theme's `root` (default `dark-mode`) with the same logical paths. By default Component tokens inherit the theme of the Basic roles they reference.
+Theme overrides live under the theme's `root` (default `dark-mode`) with the same logical paths. Only Semantic tokens carry theme overrides. Primitives are theme-independent, and Component tokens inherit the theme of the Semantic tokens they reference.
 
 - `TOKEN_THEME_ORPHAN` — an override without a base token.
-- `TOKEN_THEME_OVERRIDE` (review) — a token in a tier with `themes: false` overrides a theme; override the role it references instead.
+- `TOKEN_THEME_OVERRIDE` (review) — a token in a tier with `themes: false` overrides a theme; override the Semantic token it references instead.
 - `TOKEN_CONTRAST` — every `contrastPairs` entry meets its WCAG minimum in every theme.
 
 ## Reuse and naming
 
 New tokens are the last resort.
 
-1. **Reuse first.** Search the same domain for a role with a fitting meaning. A Scale step has exactly one primary Basic role (`primaryScaleRoles`); a second Basic alias of the same step is `TOKEN_SCALE_ALIAS_DUPLICATE`. A role from a foreign domain (a radius for a stroke) is never reused.
+1. **Reuse first.** Search the same category for a Semantic token with a fitting meaning. A Primitive step listed in `primaryRoles` has exactly one primary Semantic role; a second Semantic alias of that step in the same category is `TOKEN_ROLE_DUPLICATE`. A token from a foreign category (a radius for a border width) is never reused.
 2. **Align, do not tokenise, pattern deviations.** A value that differs slightly from an established pattern is aligned as a visible, approved change.
-3. **Semantic names only** (`TOKEN_NAME_LITERAL`): no `raw-`, `literal-`, units, hex codes, scale-step suffixes (`-spacing-11`) or pixel counts (`size-256`). Numbered steps (`spacing.4`) are Scale names, not role names.
-4. **Approval of the exact list.** Each new token states role, owner, Basic backing, Primitive backing, Light/Dark behaviour and consumers. Agents propose; they never self-authorise. `token-kit import` refuses new tokens without `--accept-new-tokens`.
-5. Basic and Component tokens carry a `$description` (`TOKEN_DESCRIPTION_MISSING`, review).
+3. **Names follow the taxonomy** above (`TOKEN_NAME_STRUCTURE`, `TOKEN_NAME_LITERAL`).
+4. **Approval of the exact list.** Each new token states tier, name parts, owner, Semantic backing (for Component tokens), Primitive backing, Light/Dark behaviour and consumers. Agents propose; they never self-authorise. `token-kit import` refuses new tokens without `--accept-new-tokens`.
+5. Semantic and Component tokens carry a `$description` (`TOKEN_DESCRIPTION_MISSING`, review).
 
 ## Source audit
 
@@ -53,7 +84,7 @@ New tokens are the last resort.
 - `TOKEN_SOURCE_LENGTH` (review) — px/rem/em literals in spacing, sizing, radius, type and stroke properties.
 - `TOKEN_SOURCE_TAILWIND_ARBITRARY` — `bg-[#fff]` (error), `p-[13px]` (review).
 - `TOKEN_SOURCE_UNKNOWN_VAR` — `var(--x)` that is neither a token nor declared in the same file (or listed in `source.allowedVars`).
-- `TOKEN_SOURCE_TIER_BYPASS` — product code reading an `internal` tier (default: Primitives, Scales).
+- `TOKEN_SOURCE_TIER_BYPASS` — product code reading an `internal` tier (default: Primitives).
 
 Structural values are not design values: `0` removes a margin, `auto` and `100%` express layout, `transparent` and `none` paint nothing. They are never permission to pick zero type sizes, colours or motion.
 

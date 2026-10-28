@@ -110,6 +110,19 @@
           "themes": {
             "type": "boolean",
             "description": "May carry theme overrides (default true)."
+          },
+          "naming": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "categories": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Allowed leading name parts (hyphenated), e.g. color, font-size. TOKEN_NAME_STRUCTURE."
+              }
+            }
           }
         }
       }
@@ -133,12 +146,6 @@
           }
         },
         "additionalProperties": false
-      }
-    },
-    "primaryScaleRoles": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
       }
     },
     "contrastPairs": {
@@ -166,13 +173,9 @@
     },
     "requireDescriptions": {
       "type": "array",
+      "description": "Tier names whose tokens need a $description.",
       "items": {
-        "enum": [
-          "primitive",
-          "scale",
-          "basic",
-          "component"
-        ]
+        "type": "string"
       }
     },
     "technicalValues": {
@@ -221,6 +224,13 @@
         "knownErrors": {
           "type": "string"
         }
+      }
+    },
+    "primaryRoles": {
+      "type": "object",
+      "description": "Primitive step -> its one primary Semantic role, e.g. {\"radius.500\": \"radius.md\"}.",
+      "additionalProperties": {
+        "type": "string"
       }
     }
   }

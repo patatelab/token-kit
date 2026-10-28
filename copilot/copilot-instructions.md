@@ -4,26 +4,29 @@ This project styles UI only through design tokens. `tokens/tokens.json` (W3C DTC
 
 ## Tiers
 
-The tier model is configured in `tiers` in `token-kit.config.json`; read it before touching tokens. The default chain is Primitive → Scale → Semantic Basic → Component, and references always point down the chain:
+The tier model is configured in `tiers` in `token-kit.config.json`; read it before touching tokens. The chain is RAW value → Primitive → Semantic → Component, and each token references only the next higher tier:
 
-- **Primitives** (`foundations.*`) hold literal values: hex colours, rem sizes, font families.
-- **Scales** (`foundations.*`) alias Primitives, e.g. `spacing.4 = {size.4}`.
-- **Semantic Basic** roles (`color.*`, `space.*`, `radius.*`, `stroke.*`, `text.*`, `motion.*`) alias Scales or Primitives and carry Light/Dark. Dark values live under `dark-mode.*`.
-- **Component** tokens (`button.*`, `card.*`, …) alias Basic roles or tokens of their own family. They never override themes.
+- **Primitive** (under `primitive`, Figma "Foundation Collection") hold the RAW values: `color-blue-500`, `size-200`, `radius-500`, `opacity-500`. Never used in product code.
+- **Semantic** (under `semantic`, Figma "Alias Collection") give Primitives a meaning and carry Light/Dark: `color-text-supplementary`, `color-primary-default`, `color-error-default`, `spacing-md`, `radius-md`, `opacity-disabled`. Dark values live under `dark-mode.semantic.*`.
+- **Component** (`button.*`, `card.*`, `snackbar.*`, Figma "Control Collection") reference Semantic tokens or tokens of their own family: `button-bg-primary-default`, `button-padding-x-md`. They never override themes.
 
 ## When you write UI code
 
-- Use `var(--…)` of Basic or Component tokens in CSS, or `token("…")` from `src/styles/tokens/tokens.ts` in React. Never hex, rgb(), px/rem literals, or Tailwind arbitrary values such as `p-[13px]` for colours, spacing, radius, type or strokes.
-- Never reference Primitives or Scales (`--palette-…`, `--size-…`, `--spacing-…`) from components.
+- Use `var(--…)` of Semantic or Component tokens in CSS, or `token("…")` from `src/styles/tokens/tokens.ts` in React. Never hex, rgb(), px/rem literals, or Tailwind arbitrary values such as `p-[13px]` for colours, spacing, radius, type or strokes.
+- Never reference Primitives (`--color-blue-500`, `--size-200`, `--radius-500`) from components.
 - A component styles only its own family. Parents do not set a child's tokens; add a variant to the child instead.
 - Structural values are fine: `0`, `auto`, `100%`, `none`, `transparent`.
 
 ## When you touch tokens
 
-1. **Reuse first.** Search the same domain for a role with a fitting meaning, not just an equal value.
+1. **Reuse first.** Search the same category for a token with a fitting meaning, not just an equal value.
 2. **Align, do not tokenise, small deviations** from an established pattern.
-3. **Semantic names only.** No values, units, hex codes or scale steps in names (`button.padding-16px` is wrong).
-4. **New tokens need approval.** Propose role, owner, Basic backing, Primitive backing, Light/Dark behaviour and consumers (use `/token-propose`). Never add them on your own authority.
+3. **Names follow the taxonomy** (lowercase, hyphen-separated, one group level per part):
+   - Primitive: Category-Property-Variant-Scale, numeric scale (`color-blue-500`, `font-family-mark-pro`).
+   - Semantic: Category-Property-Variant-Scale, scale as words (`color-primary-strong`, `radius-md`). Colour areas: Brand, Usage (`bg`, `text`, `border`, `icon`), Role (`primary`, `secondary`, `tertiary`), Intent (`success`, `warning`, `error`, `info`).
+   - Component: Component-Property-Variant-State-Scale (`button-icon-primary-hover`), states `default`, `hover`, `pressed`, `focus`, `disabled`, sizes `sm`, `md`, `lg`.
+   - Never values, units or hex codes in names (`button-padding-16px` is wrong).
+4. **New tokens need approval.** Propose tier, name, owner, Semantic and Primitive backing, Light/Dark behaviour and consumers (use `/token-propose`). Never add them on your own authority.
 
 ## Gates
 

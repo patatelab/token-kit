@@ -20,7 +20,7 @@ function storedConfig() {
   return resolveConfig(raw ? JSON.parse(raw) : {});
 }
 
-/** Root-level $extensions contracts (cssAliases, basicAliases, componentContexts) of the imported tokens. */
+/** Root-level $extensions contracts (cssAliases, semanticAliases, componentContexts) of the imported tokens. */
 function storedContracts() {
   const raw = figma.root.getPluginData(ROOT_KEY.contracts);
   return raw ? JSON.parse(raw) : undefined;

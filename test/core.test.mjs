@@ -16,42 +16,53 @@ test("starter tokens are conform", () => {
   assert.deepEqual(checkModel(indexTree(starterTree(), config), config, starterTree()), []);
 });
 
-test("tiers come from foundations, prefixes and families", () => {
+test("tiers come from the primitive and semantic roots; the rest are component families", () => {
   const index = indexTree(starterTree(), starterConfig());
-  const tier = (p) => index.tokens.get(`light:${p}`).tier;
-  assert.equal(tier("palette.brand.500"), "primitive");
-  assert.equal(tier("spacing.4"), "scale");
-  assert.equal(tier("space.gutter"), "basic");
-  assert.equal(tier("button.radius"), "component");
-  assert.equal(index.tokens.get("dark:color.text.default").storage[0], "dark-mode");
+  const tier = (p, theme = "light") => index.tokens.get(`${theme}:${p}`).tier;
+  assert.equal(tier("color.blue.500"), "primitive");
+  assert.equal(tier("radius.500"), "primitive");
+  assert.equal(tier("color.primary.default"), "semantic");
+  assert.equal(tier("color.primary.default", "dark"), "semantic");
+  assert.equal(tier("button.bg.primary.default"), "component");
+  assert.equal(index.tokens.get("light:button.bg.primary.default").family, "button");
+  assert.deepEqual(index.tokens.get("dark:color.text.default").storage.slice(0, 2), ["dark-mode", "semantic"]);
 });
 
 test("model rules catch broken chains, literals, names, cycles, themes and contrast", () => {
   const config = starterConfig();
   const tree = starterTree();
-  tree.button.radius.$value = "{corner.2}"; // component -> primitive
+  tree.button.radius.md.$value = "{radius.500}"; // component -> primitive
   tree.card.gap.$value = "12px"; // raw value
-  tree.card.padding.$value = "{space.missing}";
-  tree.space["gutter-16px"] = { $value: "{spacing.4}", $description: "duplicate" };
-  tree.color.text.default.$value = "{color.text.muted}";
-  tree.color.text.muted.$value = "{color.text.default}";
-  tree["dark-mode"].color.brand = { "on-primary": { $value: "{palette.brand.400}" } };
-  tree["dark-mode"].button = { radius: { $type: "dimension", $value: "{radius.surface}" } };
+  tree.card.padding.md.$value = "{spacing.missing}";
+  tree.semantic.spacing["gutter-16px"] = { $value: "{space.200}", $description: "duplicate" };
+  tree.semantic.spacing["200"] = { $value: "{space.200}", $description: "step name" };
+  tree.semantic.gap = { $type: "dimension", md: { $value: "{space.100}", $description: "unknown category" } };
+  tree.semantic.color.bg.default.$value = "{color.blue.500}"; // ok: semantic -> primitive
+  tree.semantic.color.text.default.$value = "{color.primary.default}"; // semantic -> semantic
+  tree.primitive.color.grey["050"].$value = "{color.white}"; // primitive -> primitive
+  tree.primitive.color.lemon["600"].$value = "{color.lemon.700}";
+  tree.primitive.color.lemon["700"].$value = "{color.lemon.600}";
+  tree["dark-mode"].semantic.color.primary["on-primary"] = { $value: "{color.lemon.400}" };
+  tree["dark-mode"].button = { radius: { md: { $type: "dimension", $value: "{radius.md}" } } };
   const found = rules(checkModel(indexTree(tree, config), config, tree));
   for (const expected of [
-    "TOKEN_TIER_CHAIN button.radius",
+    "TOKEN_TIER_CHAIN button.radius.md",
+    "TOKEN_TIER_CHAIN color.text.default",
+    "TOKEN_TIER_CHAIN color.grey.050",
     "TOKEN_RAW_VALUE card.gap",
-    "TOKEN_REF_MISSING card.padding",
-    "TOKEN_NAME_LITERAL space.gutter-16px",
-    "TOKEN_SCALE_ALIAS_DUPLICATE space.gutter-16px",
-    "TOKEN_REF_CYCLE color.text.default",
-    "TOKEN_THEME_OVERRIDE button.radius (dark)",
-    "TOKEN_CONTRAST color.brand.on-primary on color.brand.primary",
+    "TOKEN_REF_MISSING card.padding.md",
+    "TOKEN_NAME_LITERAL spacing.gutter-16px",
+    "TOKEN_NAME_LITERAL spacing.200",
+    "TOKEN_NAME_STRUCTURE gap.md",
+    "TOKEN_ROLE_DUPLICATE spacing.gutter-16px",
+    "TOKEN_REF_CYCLE color.lemon.600",
+    "TOKEN_THEME_OVERRIDE button.radius.md (dark)",
+    "TOKEN_CONTRAST color.primary.on-primary on color.primary.default",
   ])
     assert.ok(found.includes(expected), `${expected} missing in\n${found.join("\n")}`);
 });
 
-test("the tier model is configurable: three tiers without a foundations group", () => {
+test("the tier model is configurable: three tiers matched by prefixes", () => {
   const config = resolveConfig({
     themes: {},
     requireDescriptions: [],
@@ -90,30 +101,35 @@ test("bundle checksum, validation and diff", () => {
   const bundle = createBundle({ kind: "tree", tokens: starterTree(), config: {} });
   assert.deepEqual(validateBundle(bundle), []);
   assert.equal(checksumOf({ b: 1, a: 2 }), checksumOf({ a: 2, b: 1 }));
-  bundle.tokens.color.text.default.$value = "#FF0000";
+  bundle.tokens.semantic.color.text.default.$value = "#FF0000";
   assert.match(validateBundle(bundle).join(), /checksum mismatch/);
   const flat = toFlat(indexTree(starterTree(), config));
   const changed = structuredClone(flat);
-  changed["space.gutter"].value = "{spacing.5}";
+  changed["spacing.md"].value = "{space.300}";
   delete changed["card.gap"];
-  changed["card.shadow-color"] = { type: "color", value: "{color.border.default}", tier: "component" };
-  assert.deepEqual(diffFlat(flat, changed), { added: ["card.shadow-color"], changed: ["space.gutter"], removed: ["card.gap"] });
+  changed["card.divider.default"] = { type: "color", value: "{color.border.default}", tier: "component" };
+  assert.deepEqual(diffFlat(flat, changed), { added: ["card.divider.default"], changed: ["spacing.md"], removed: ["card.gap"] });
 });
 
 test("applyFlat writes changes in place, inserts new tokens and removes with replace", () => {
   const config = starterConfig();
   const tree = starterTree();
   const flat = toFlat(indexTree(tree, config));
-  flat["palette.brand.500"].value = "#1E40AF";
-  flat["color.brand.primary"].themes = { dark: "{palette.brand.400}" };
-  flat["palette.brand.700"] = { type: "color", value: "#1E3A8A", tier: "primitive" };
+  flat["color.blue.500"].value = "#1E40AF";
+  flat["color.brand.primary"].themes = { dark: "{color.lemon.400}" };
+  flat["color.blue.800"] = { type: "color", value: "#1E3A8A", tier: "primitive" };
+  flat["color.purple.500"] = { type: "color", value: "#7C3AED", tier: "primitive" };
+  flat["color.accent.default"] = { type: "color", value: "{color.purple.500}", tier: "semantic", description: "Accent." };
   delete flat["card.gap"];
   const merged = applyFlat(tree, flat, config);
-  assert.equal(merged.tree.foundations.palette.brand["500"].$value, "#1E40AF");
-  assert.equal(merged.tree.foundations.palette.brand["700"].$value, "#1E3A8A");
-  assert.equal(merged.tree["dark-mode"].color.brand.primary.$value, "{palette.brand.400}");
+  assert.equal(merged.tree.primitive.color.blue["500"].$value, "#1E40AF");
+  assert.equal(merged.tree.primitive.color.blue["800"].$value, "#1E3A8A");
+  assert.equal(merged.tree.primitive.color.purple["500"].$value, "#7C3AED", "new groups land in their tier root");
+  assert.equal(merged.tree.semantic.color.accent.default.$value, "{color.purple.500}");
+  assert.equal(merged.tree["dark-mode"].semantic.color.brand.primary.$value, "{color.lemon.400}");
   assert.ok(merged.tree.card.gap, "merge keeps tokens missing from the bundle");
-  assert.deepEqual(merged.changes.added.sort(), ["color.brand.primary (dark)", "palette.brand.700"]);
+  assert.deepEqual(merged.changes.added.sort(), ["color.accent.default", "color.blue.800", "color.brand.primary (dark)", "color.purple.500"]);
+  assert.deepEqual(checkModel(indexTree(merged.tree, config), config, merged.tree), []);
   const replaced = applyFlat(tree, flat, config, { strategy: "replace" });
   assert.equal(replaced.tree.card.gap, undefined);
   assert.deepEqual(replaced.changes.removed, ["card.gap"]);
@@ -130,11 +146,11 @@ test("flat index gives the same findings as the tree", () => {
   assert.deepEqual(rules(fromFlat), rules(fromTree));
 });
 
-test("tier filter keeps foundations and basic roles only", () => {
+test("tier filter keeps primitive and semantic tokens only", () => {
   const config = starterConfig();
-  const filtered = filterTreeByTier(starterTree(), config, ["primitive", "scale", "basic"]);
+  const filtered = filterTreeByTier(starterTree(), config, ["primitive", "semantic"]);
   assert.equal(filtered.button, undefined);
-  assert.ok(filtered.foundations.palette && filtered.color && filtered["dark-mode"].color);
+  assert.ok(filtered.primitive.color && filtered.semantic.color && filtered["dark-mode"].semantic.color);
 });
 
 test("colour parsing and WCAG contrast", () => {

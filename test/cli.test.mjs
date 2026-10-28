@@ -22,7 +22,7 @@ test("init, build and check pass on the starter", () => {
   assert.equal(run(cwd, "report", "--check").status, 0);
   const result = run(cwd, "check");
   assert.equal(result.status, 0, result.stdout);
-  assert.match(readFileSync(join(cwd, "src/styles/tokens/tokens.css"), "utf8"), /--button-radius: var\(--radius-control\);/);
+  assert.match(readFileSync(join(cwd, "src/styles/tokens/tokens.css"), "utf8"), /--button-radius-md: var\(--radius-md\);/);
 });
 
 test("source audit flags literals, tier bypass and unknown vars; ratchet freezes reviews", () => {
@@ -30,7 +30,7 @@ test("source audit flags literals, tier bypass and unknown vars; ratchet freezes
   mkdirSync(join(cwd, "src/components"), { recursive: true });
   writeFileSync(
     join(cwd, "src/components/Card.module.css"),
-    `.card {\n  --_inset: calc(var(--space-gutter) * 2);\n  padding: var(--_inset);\n  color: #333;\n  margin-top: 12px;\n  background: var(--palette-neutral-0);\n  border-color: var(--does-not-exist);\n}\n`,
+    `.card {\n  --_inset: calc(var(--spacing-md) * 2);\n  padding: var(--_inset);\n  color: #333;\n  margin-top: 12px;\n  background: var(--color-white);\n  border-color: var(--does-not-exist);\n}\n`,
   );
   writeFileSync(join(cwd, "src/components/Card.tsx"), `export const Card = () => <div className="p-[13px] bg-[#fff]" style={{ padding: 8, color: "#ff0000" }} />;\n`);
   const result = run(cwd, "check", "--json");
@@ -59,7 +59,7 @@ test("source audit flags literals, tier bypass and unknown vars; ratchet freezes
 test("export and import round trip between two projects", () => {
   const a = project();
   const tokens = readJson(join(a, "tokens/tokens.json"));
-  tokens.foundations.palette.brand["500"].$value = "#1E40AF";
+  tokens.primitive.color.blue["500"].$value = "#1E40AF";
   writeFileSync(join(a, "tokens/tokens.json"), JSON.stringify(tokens, null, 2));
   assert.equal(run(a, "export", "--out", "out.tokens.bundle.json").status, 0);
   const bundle = readJson(join(a, "out.tokens.bundle.json"));
@@ -71,7 +71,7 @@ test("export and import round trip between two projects", () => {
   assert.equal(dry.status, 0, dry.stderr);
   assert.match(dry.stdout, /\| Changed \| 1 \|/);
   assert.match(dry.stdout, /Dry run/);
-  assert.notEqual(readJson(join(b, "tokens/tokens.json")).foundations.palette.brand["500"].$value, "#1E40AF");
+  assert.notEqual(readJson(join(b, "tokens/tokens.json")).primitive.color.blue["500"].$value, "#1E40AF");
   assert.equal(run(b, "import", join(a, "out.tokens.bundle.json"), "--apply").status, 0);
   assert.deepEqual(readJson(join(b, "tokens/tokens.json")), tokens);
 });
@@ -79,7 +79,7 @@ test("export and import round trip between two projects", () => {
 test("import refuses non-conform bundles and unapproved new tokens", () => {
   const a = project();
   const tokens = readJson(join(a, "tokens/tokens.json"));
-  tokens.color.text.default.$value = "{palette.neutral.200}"; // fails contrast
+  tokens.semantic.color.text.default.$value = "{color.grey.200}"; // fails contrast
   writeFileSync(join(a, "tokens/tokens.json"), JSON.stringify(tokens));
   run(a, "export", "--out", "bad.json");
   const b = project();
@@ -87,16 +87,16 @@ test("import refuses non-conform bundles and unapproved new tokens", () => {
   assert.equal(bad.status, 1);
   assert.match(bad.stdout, /TOKEN_CONTRAST/);
 
-  tokens.color.text.default.$value = "{palette.neutral.900}";
-  tokens.card["shadow-color"] = { $type: "color", $value: "{color.border.default}", $description: "Card shadow." };
+  tokens.semantic.color.text.default.$value = "{color.grey.900}";
+  tokens.card.divider = { $type: "color", default: { $value: "{color.border.default}", $description: "Card divider." } };
   writeFileSync(join(a, "tokens/tokens.json"), JSON.stringify(tokens));
   run(a, "export", "--out", "new.json");
   assert.equal(run(b, "import", join(a, "new.json"), "--apply").status, 2);
   assert.equal(run(b, "import", join(a, "new.json"), "--apply", "--accept-new-tokens").status, 0);
-  assert.equal(readJson(join(b, "tokens/tokens.json")).card["shadow-color"].$value, "{color.border.default}");
+  assert.equal(readJson(join(b, "tokens/tokens.json")).card.divider.default.$value, "{color.border.default}");
 
   const tampered = readJson(join(a, "new.json"));
-  tampered.tokens.card.radius.$value = "{radius.pill}";
+  tampered.tokens.card.radius.$value = "{radius.full}";
   writeFileSync(join(a, "tampered.json"), JSON.stringify(tampered));
   assert.match(run(b, "import", join(a, "tampered.json")).stderr, /checksum mismatch/);
 });

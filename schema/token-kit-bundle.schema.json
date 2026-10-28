@@ -81,7 +81,7 @@
     },
     "contracts": {
       "type": "object",
-      "description": "Root $extensions of the token tree (flat bundles only): cssAliases, basicAliases, componentContexts."
+      "description": "Root $extensions of the token tree (flat bundles only): cssAliases, semanticAliases, componentContexts."
     }
   },
   "allOf": [
@@ -104,12 +104,7 @@
                 },
                 "value": {},
                 "tier": {
-                  "enum": [
-                    "primitive",
-                    "scale",
-                    "basic",
-                    "component"
-                  ]
+                  "type": "string"
                 },
                 "description": {
                   "type": "string"

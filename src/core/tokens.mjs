@@ -32,7 +32,9 @@ function themeOfRoot(config, key) {
 
 function tierMatches(match = {}, entry) {
   const p = entry.path;
-  if (match.roots && !match.roots.includes(entry.storage[0])) return false;
+  // Theme overrides live under the theme root, so their tier root is the second key.
+  const root = entry.theme && entry.theme !== "light" ? entry.storage[1] : entry.storage[0];
+  if (match.roots && !match.roots.includes(root)) return false;
   if (match.literal !== undefined && match.literal === referencesOf(entry.value).length > 0) return false;
   const byPrefix = match.prefixes?.some((x) => p === x || p.startsWith(x + "."));
   const byPath = match.paths?.includes(p);
@@ -147,13 +149,22 @@ function ensureNode(tree, storage) {
 
 function storageForNew(index, theme, path, config, tier) {
   const parts = path.split(".");
-  for (let i = parts.length - 1; i >= 0; i--) {
-    const group = index.groups.get(`${theme}:${parts.slice(0, i).join(".")}`);
-    if (group) return [...group, ...parts.slice(i)];
-  }
   const root = theme === "light" ? [] : [config.themes[theme].root];
-  const tierRoot = theme === "light" ? config.tiers.find((t) => t.name === tier)?.match?.roots?.[0] : undefined;
+  const tierRoot = config.tiers.find((t) => t.name === tier)?.match?.roots?.[0];
+  for (let i = parts.length - 1; i >= 1; i--) {
+    const group = index.groups.get(`${theme}:${parts.slice(0, i).join(".")}`);
+    if (group && (!tierRoot || group[root.length] === tierRoot)) return [...group, ...parts.slice(i)];
+  }
   return [...root, ...(tierRoot ? [tierRoot] : []), ...parts];
+}
+
+/** Tier root groups (match.roots) are pathSkip groups; mark one when an insert creates it. */
+function markTierRoot(tree, storage, config, theme) {
+  const depth = theme === "light" ? 0 : 1;
+  const key = storage[depth];
+  if (storage.length <= depth + 1 || !config.tiers.some((t) => t.match?.roots?.includes(key))) return;
+  const node = nodeAt(tree, storage.slice(0, depth + 1));
+  if (!node.$extensions?.pathSkip) node.$extensions = { ...node.$extensions, pathSkip: true };
 }
 
 function writeLeaf(leaf, value, type, inheritedType) {
@@ -192,6 +203,7 @@ export function applyFlat(tree, flat, config, { strategy = "merge", only = null,
       const existing = index.tokens.get(`${theme}:${path}`);
       const storage = existing?.storage ?? hints?.get(`${theme}:${path}`) ?? storageForNew(index, theme, path, config, item.tier);
       const leaf = existing ? nodeAt(next, storage) : ensureNode(next, storage);
+      if (!existing) markTierRoot(next, storage, config, theme);
       const before = existing ? JSON.stringify([existing.value, existing.type, existing.description ?? null]) : null;
       writeLeaf(leaf, value, item.type, inheritedTypeAt(next, storage));
       if (theme === "light") {

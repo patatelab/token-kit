@@ -9,7 +9,8 @@ export const DEFAULT_CONFIG = {
   cssPrefix: "",
   tailwindNamespace: "tk",
   // The tier model. Order matters: a token belongs to the first tier whose `match` fits.
-  //   match.roots     top-level storage groups (e.g. "foundations")
+  //   label           Figma collection name
+  //   match.roots     top-level storage groups (e.g. "primitive"; mark them "$extensions": {"pathSkip": true})
   //   match.prefixes  logical path prefixes (e.g. "color" matches color.*)
   //   match.paths     exact logical paths
   //   match.literal   true: only literal values, false: only references
@@ -20,13 +21,32 @@ export const DEFAULT_CONFIG = {
   //   allowPrefixes   further logical prefixes this tier may reference
   //   internal        not consumed by product code (source audit, TypeScript output)
   //   themes          may carry theme overrides (false: TOKEN_THEME_OVERRIDE review)
-  // A tier without match conditions catches everything left. Any number of tiers works:
-  // two (core/semantic), three, or more. The default is a four-tier chain.
+  //   naming.categories  allowed leading name parts (TOKEN_NAME_STRUCTURE), e.g. "color", "font-size"
+  // A tier without match conditions catches everything left. Any number of tiers works.
+  // The default follows the token guideline: RAW value -> Primitive -> Semantic -> Component,
+  // each tier references only the next higher one (docs/token-contract.md).
   tiers: [
-    { name: "primitive", label: "Primitives", match: { roots: ["foundations"], literal: true }, references: [], literals: true, internal: true },
-    { name: "scale", label: "Scale", match: { roots: ["foundations"] }, references: ["primitive", "scale"], internal: true },
-    { name: "basic", label: "Basic", match: { prefixes: ["color", "space", "radius", "stroke", "text", "font", "motion", "shadow", "opacity"] }, references: ["scale", "primitive"] },
-    { name: "component", label: "Component", match: {}, references: ["basic"], families: true, themes: false },
+    {
+      name: "primitive",
+      label: "Foundation Collection",
+      match: { roots: ["primitive"] },
+      references: [],
+      literals: true,
+      internal: true,
+      naming: {
+        categories: ["color", "font-family", "font-weight", "font-size", "line-height", "letter-spacing", "size", "space", "radius", "border", "shadow", "opacity", "elevation", "breakpoint", "motion", "z-index"],
+      },
+    },
+    {
+      name: "semantic",
+      label: "Alias Collection",
+      match: { roots: ["semantic"] },
+      references: ["primitive"],
+      naming: {
+        categories: ["color", "spacing", "radius", "border-width", "opacity", "blur", "shadow", "font-family", "font-size", "font-weight", "line-height", "letter-spacing", "motion", "z-index", "elevation", "breakpoint"],
+      },
+    },
+    { name: "component", label: "Control Collection", match: {}, references: ["semantic"], families: true, themes: false },
   ],
   themes: {
     dark: {
@@ -35,13 +55,13 @@ export const DEFAULT_CONFIG = {
       selector: '[data-theme="dark"]',
     },
   },
-  // One primary Basic role per Scale step, e.g. {"spacing.4": "space.gutter"}.
-  primaryScaleRoles: {},
+  // One primary Semantic role per Primitive step, e.g. {"radius.500": "radius.md"}.
+  primaryRoles: {},
   // WCAG contrast checks, evaluated in every theme.
   contrastPairs: [],
   // Tiers whose tokens need a $description.
-  requireDescriptions: ["basic", "component"],
-  // Literal values a Basic/Component token may carry without a reference.
+  requireDescriptions: ["semantic", "component"],
+  // Literal values a Semantic/Component token may carry without a reference.
   technicalValues: ["0", "none", "transparent", "auto", "inherit", "currentColor", "100%"],
   source: {
     roots: ["src"],
@@ -69,6 +89,6 @@ export function tierByName(config, name) {
 
 /** The subset of the config that travels inside a bundle. */
 export function portableConfig(config) {
-  const { tiers, themes, primaryScaleRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix } = config;
-  return { tiers, themes, primaryScaleRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix };
+  const { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix } = config;
+  return { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix };
 }

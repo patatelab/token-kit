@@ -13,7 +13,8 @@ const DEFAULT_CONFIG = {
   cssPrefix: "",
   tailwindNamespace: "tk",
   // The tier model. Order matters: a token belongs to the first tier whose `match` fits.
-  //   match.roots     top-level storage groups (e.g. "foundations")
+  //   label           Figma collection name
+  //   match.roots     top-level storage groups (e.g. "primitive"; mark them "$extensions": {"pathSkip": true})
   //   match.prefixes  logical path prefixes (e.g. "color" matches color.*)
   //   match.paths     exact logical paths
   //   match.literal   true: only literal values, false: only references
@@ -24,13 +25,32 @@ const DEFAULT_CONFIG = {
   //   allowPrefixes   further logical prefixes this tier may reference
   //   internal        not consumed by product code (source audit, TypeScript output)
   //   themes          may carry theme overrides (false: TOKEN_THEME_OVERRIDE review)
-  // A tier without match conditions catches everything left. Any number of tiers works:
-  // two (core/semantic), three, or more. The default is a four-tier chain.
+  //   naming.categories  allowed leading name parts (TOKEN_NAME_STRUCTURE), e.g. "color", "font-size"
+  // A tier without match conditions catches everything left. Any number of tiers works.
+  // The default follows the token guideline: RAW value -> Primitive -> Semantic -> Component,
+  // each tier references only the next higher one (docs/token-contract.md).
   tiers: [
-    { name: "primitive", label: "Primitives", match: { roots: ["foundations"], literal: true }, references: [], literals: true, internal: true },
-    { name: "scale", label: "Scale", match: { roots: ["foundations"] }, references: ["primitive", "scale"], internal: true },
-    { name: "basic", label: "Basic", match: { prefixes: ["color", "space", "radius", "stroke", "text", "font", "motion", "shadow", "opacity"] }, references: ["scale", "primitive"] },
-    { name: "component", label: "Component", match: {}, references: ["basic"], families: true, themes: false },
+    {
+      name: "primitive",
+      label: "Foundation Collection",
+      match: { roots: ["primitive"] },
+      references: [],
+      literals: true,
+      internal: true,
+      naming: {
+        categories: ["color", "font-family", "font-weight", "font-size", "line-height", "letter-spacing", "size", "space", "radius", "border", "shadow", "opacity", "elevation", "breakpoint", "motion", "z-index"],
+      },
+    },
+    {
+      name: "semantic",
+      label: "Alias Collection",
+      match: { roots: ["semantic"] },
+      references: ["primitive"],
+      naming: {
+        categories: ["color", "spacing", "radius", "border-width", "opacity", "blur", "shadow", "font-family", "font-size", "font-weight", "line-height", "letter-spacing", "motion", "z-index", "elevation", "breakpoint"],
+      },
+    },
+    { name: "component", label: "Control Collection", match: {}, references: ["semantic"], families: true, themes: false },
   ],
   themes: {
     dark: {
@@ -39,13 +59,13 @@ const DEFAULT_CONFIG = {
       selector: '[data-theme="dark"]',
     },
   },
-  // One primary Basic role per Scale step, e.g. {"spacing.4": "space.gutter"}.
-  primaryScaleRoles: {},
+  // One primary Semantic role per Primitive step, e.g. {"radius.500": "radius.md"}.
+  primaryRoles: {},
   // WCAG contrast checks, evaluated in every theme.
   contrastPairs: [],
   // Tiers whose tokens need a $description.
-  requireDescriptions: ["basic", "component"],
-  // Literal values a Basic/Component token may carry without a reference.
+  requireDescriptions: ["semantic", "component"],
+  // Literal values a Semantic/Component token may carry without a reference.
   technicalValues: ["0", "none", "transparent", "auto", "inherit", "currentColor", "100%"],
   source: {
     roots: ["src"],
@@ -73,8 +93,8 @@ function tierByName(config, name) {
 
 /** The subset of the config that travels inside a bundle. */
 function portableConfig(config) {
-  const { tiers, themes, primaryScaleRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix } = config;
-  return { tiers, themes, primaryScaleRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix };
+  const { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix } = config;
+  return { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix };
 }
 
 // ---- core/sha256.mjs
@@ -169,7 +189,9 @@ function themeOfRoot(config, key) {
 
 function tierMatches(match = {}, entry) {
   const p = entry.path;
-  if (match.roots && !match.roots.includes(entry.storage[0])) return false;
+  // Theme overrides live under the theme root, so their tier root is the second key.
+  const root = entry.theme && entry.theme !== "light" ? entry.storage[1] : entry.storage[0];
+  if (match.roots && !match.roots.includes(root)) return false;
   if (match.literal !== undefined && match.literal === referencesOf(entry.value).length > 0) return false;
   const byPrefix = match.prefixes?.some((x) => p === x || p.startsWith(x + "."));
   const byPath = match.paths?.includes(p);
@@ -284,13 +306,22 @@ function ensureNode(tree, storage) {
 
 function storageForNew(index, theme, path, config, tier) {
   const parts = path.split(".");
-  for (let i = parts.length - 1; i >= 0; i--) {
-    const group = index.groups.get(`${theme}:${parts.slice(0, i).join(".")}`);
-    if (group) return [...group, ...parts.slice(i)];
-  }
   const root = theme === "light" ? [] : [config.themes[theme].root];
-  const tierRoot = theme === "light" ? config.tiers.find((t) => t.name === tier)?.match?.roots?.[0] : undefined;
+  const tierRoot = config.tiers.find((t) => t.name === tier)?.match?.roots?.[0];
+  for (let i = parts.length - 1; i >= 1; i--) {
+    const group = index.groups.get(`${theme}:${parts.slice(0, i).join(".")}`);
+    if (group && (!tierRoot || group[root.length] === tierRoot)) return [...group, ...parts.slice(i)];
+  }
   return [...root, ...(tierRoot ? [tierRoot] : []), ...parts];
+}
+
+/** Tier root groups (match.roots) are pathSkip groups; mark one when an insert creates it. */
+function markTierRoot(tree, storage, config, theme) {
+  const depth = theme === "light" ? 0 : 1;
+  const key = storage[depth];
+  if (storage.length <= depth + 1 || !config.tiers.some((t) => t.match?.roots?.includes(key))) return;
+  const node = nodeAt(tree, storage.slice(0, depth + 1));
+  if (!node.$extensions?.pathSkip) node.$extensions = { ...node.$extensions, pathSkip: true };
 }
 
 function writeLeaf(leaf, value, type, inheritedType) {
@@ -329,6 +360,7 @@ function applyFlat(tree, flat, config, { strategy = "merge", only = null, storag
       const existing = index.tokens.get(`${theme}:${path}`);
       const storage = existing?.storage ?? hints?.get(`${theme}:${path}`) ?? storageForNew(index, theme, path, config, item.tier);
       const leaf = existing ? nodeAt(next, storage) : ensureNode(next, storage);
+      if (!existing) markTierRoot(next, storage, config, theme);
       const before = existing ? JSON.stringify([existing.value, existing.type, existing.description ?? null]) : null;
       writeLeaf(leaf, value, item.type, inheritedTypeAt(next, storage));
       if (theme === "light") {
@@ -432,22 +464,24 @@ const RULES = {
   TOKEN_TYPE_MISSING: "Every token has a $type (directly or inherited from its group).",
   TOKEN_REF_MISSING: "Every reference points to an existing token.",
   TOKEN_REF_CYCLE: "References never form a cycle, in any theme.",
-  TOKEN_TIER_CHAIN: "Each tier references only the tiers its config allows (default: Component -> Basic -> Scale/Primitive). No skipping, no foreign families.",
-  TOKEN_RAW_VALUE: "Only tiers with literals: true (default: Primitives) hold literal values; the others reference tokens.",
+  TOKEN_TIER_CHAIN: "Each token references only the next higher tier (default: Component -> Semantic -> Primitive). No skipping, no foreign families.",
+  TOKEN_RAW_VALUE: "Only tiers with literals: true (default: Primitive) hold RAW values; the others reference tokens.",
   TOKEN_TYPE_MISMATCH: "An alias has the same $type as its target.",
   TOKEN_THEME_ORPHAN: "A theme override has a base (light) token.",
   TOKEN_THEME_OVERRIDE: "Tiers with themes: false (default: Component) inherit themes from the roles they reference.",
-  TOKEN_NAME_LITERAL: "Names describe the role, never the value (no px, hex, raw, scale-step suffixes).",
-  TOKEN_SCALE_ALIAS_DUPLICATE: "Each Scale step has exactly one primary Basic role.",
-  TOKEN_DESCRIPTION_MISSING: "Basic and Component tokens carry a $description.",
+  TOKEN_NAME_LITERAL: "Names describe the role, never the value (no px, hex, raw; numeric scale steps only in Primitives).",
+  TOKEN_NAME_STRUCTURE: "Names start with a category the tier allows (naming.categories), e.g. color-, spacing-, font-size-.",
+  TOKEN_ROLE_DUPLICATE: "Each configured Primitive step has exactly one primary Semantic role (primaryRoles).",
+  TOKEN_DESCRIPTION_MISSING: "Semantic and Component tokens carry a $description.",
   TOKEN_CONTRAST: "Configured text/background pairs meet their WCAG contrast minimum in every theme.",
-  TOKEN_CONTRACT: "$extensions contracts (basicAliases, componentContexts) are complete and valid.",
+  TOKEN_CONTRACT: "$extensions contracts (semanticAliases, componentContexts) are complete and valid.",
 };
 
 const KEY_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-// Names that encode a value: raw/literal leaves, units, hex codes, scale-step suffixes.
-const LITERAL_NAME =
-  /(?:^|[.-])(?:raw|literal)(?:-|$)|\d+(?:px|rem|percent|em|ch|deg)(?:$|[.-])|(?:^|[.-])hex-[0-9a-f]{3,8}(?:$|[.-])|(?:^|[.-])spacing-\d+(?:$|[.-])|(?:^|[.-])type-(?:size|weight|leading|letter-spacing|text-case)-[a-z0-9-]+$|(?:^|[.-])(?:size|width|height)-\d{2,}$/;
+// Names that encode a value: raw/literal leaves, units, hex codes.
+const LITERAL_NAME = /(?:^|[.-])(?:raw|literal)(?:-|$)|\d+(?:px|rem|percent|em|ch|deg)(?:$|[.-])|(?:^|[.-])hex-[0-9a-f]{3,8}(?:$|[.-])/;
+// Numeric scale steps (color-blue-500, size-200) belong to Primitives; roles use words (md, strong).
+const STEP_NAME = /(?:^|[.-])\d{2,}(?:$|[.-])|(?:^|[.-])(?:spacing|space|size|width|height)[.-]\d+(?:$|[.-])/;
 
 function finding(rule, severity, subject, message, suggestion) {
   return { rule, severity, subject, message, suggestion: suggestion ?? RULES[rule] };
@@ -504,7 +538,7 @@ function allowedReference(config, contracts, e, target) {
   if (tier.allowPrefixes?.some((p) => target.path === p || target.path.startsWith(p.endsWith(".") ? p : p + "."))) return true;
   if (target.tier === e.tier) {
     if (tier.families && target.family === e.family) return true;
-    if (contracts.basicAliases?.[e.path]?.target === target.path) return true;
+    if (contracts.semanticAliases?.[e.path]?.target === target.path) return true;
     if (tier.families && target.family) {
       const leaf = target.path.slice(target.family.length + 1);
       if (contracts.componentContexts?.[target.family]?.consumers?.[e.family]?.includes(leaf)) return true;
@@ -570,18 +604,23 @@ function checkModel(index, config, tree = null) {
       findings.push(finding("TOKEN_TYPE_MISMATCH", "review", themed, `${e.type} aliases ${target.type} {${alias}}`));
 
     if (e.theme === "light") {
-      if (LITERAL_NAME.test(e.path)) findings.push(finding("TOKEN_NAME_LITERAL", "error", e.path, "name encodes a value"));
+      if (LITERAL_NAME.test(e.path) || (!subjectTier?.literals && STEP_NAME.test(e.path)))
+        findings.push(finding("TOKEN_NAME_LITERAL", "error", e.path, "name encodes a value"));
+      const categories = subjectTier?.naming?.categories;
+      const name = e.path.split(".").join("-");
+      if (categories?.length && !categories.some((c) => name === c || name.startsWith(c + "-")))
+        findings.push(finding("TOKEN_NAME_STRUCTURE", "error", e.path, `"${name}" starts with no ${subject.tier} category`, `Start with one of: ${categories.join(", ")}.`));
       if (config.requireDescriptions.includes(e.tier) && !e.description)
         findings.push(finding("TOKEN_DESCRIPTION_MISSING", "review", e.path, "no $description"));
     }
   }
 
-  // One primary Basic role per Scale step.
-  for (const [step, primary] of Object.entries(config.primaryScaleRoles ?? {})) {
+  // One primary Semantic role per configured Primitive step.
+  for (const [step, primary] of Object.entries(config.primaryRoles ?? {})) {
     const domain = primary.split(".")[0] + ".";
     for (const e of light.values())
       if (e.tier === light.get(primary)?.tier && e.path !== primary && e.path.startsWith(domain) && aliasOf(e.value) === step)
-        findings.push(finding("TOKEN_SCALE_ALIAS_DUPLICATE", "error", e.path, `second Basic alias of ${step}`, `Use ${primary}.`));
+        findings.push(finding("TOKEN_ROLE_DUPLICATE", "error", e.path, `second ${e.tier} alias of ${step}`, `Use ${primary}.`));
   }
 
   for (const theme of themeNames(config)) {
@@ -602,9 +641,9 @@ function checkModel(index, config, tree = null) {
     }
   }
 
-  for (const [path, alias] of Object.entries(contracts.basicAliases ?? {}))
+  for (const [path, alias] of Object.entries(contracts.semanticAliases ?? {}))
     if (!alias?.reason || !light.has(path) || !light.has(alias?.target))
-      findings.push(finding("TOKEN_CONTRACT", "error", `basicAliases.${path}`, "needs an existing source, target and a reason"));
+      findings.push(finding("TOKEN_CONTRACT", "error", `semanticAliases.${path}`, "needs an existing source, target and a reason"));
   for (const [owner, ctx] of Object.entries(contracts.componentContexts ?? {}))
     if (!ctx?.reason || !isPlainObject(ctx.consumers) || !Object.keys(ctx.consumers).length)
       findings.push(finding("TOKEN_CONTRACT", "error", `componentContexts.${owner}`, "needs a reason and consumers"));
@@ -714,7 +753,7 @@ function checksumOf(tokens) {
 function createBundle({ kind, tokens, config, source = {}, baselines, contracts, exportedAt = new Date().toISOString() }) {
   const bundle = { format: BUNDLE_FORMAT, version: BUNDLE_VERSION, kind, exportedAt, source, config, tokens };
   if (baselines) bundle.baselines = baselines;
-  // Flat bundles carry the tree's root $extensions (cssAliases, basicAliases, componentContexts) separately.
+  // Flat bundles carry the tree's root $extensions (cssAliases, semanticAliases, componentContexts) separately.
   if (contracts) bundle.contracts = contracts;
   bundle.checksum = checksumOf(tokens);
   return bundle;
@@ -778,7 +817,7 @@ function storedConfig() {
   return resolveConfig(raw ? JSON.parse(raw) : {});
 }
 
-/** Root-level $extensions contracts (cssAliases, basicAliases, componentContexts) of the imported tokens. */
+/** Root-level $extensions contracts (cssAliases, semanticAliases, componentContexts) of the imported tokens. */
 function storedContracts() {
   const raw = figma.root.getPluginData(ROOT_KEY.contracts);
   return raw ? JSON.parse(raw) : undefined;

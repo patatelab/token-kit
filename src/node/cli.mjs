@@ -229,7 +229,7 @@ const commands = {
       "",
       ...(["added", "changed", "removed"].flatMap((k) => (diff[k].length ? [`## ${k[0].toUpperCase() + k.slice(1)}`, "", ...diff[k].map((p) => `- \`${p}\``), ""] : []))),
       ...(failing.length ? ["## Failing findings", "", ...failing.map((f) => `- **${f.rule}** \`${f.subject}${f.line ? ":" + f.line : ""}\` ${f.message}`), ""] : []),
-      ...(newTokens.length ? ["## Approval needed", "", `${newTokens.length} new token(s) need the owner's approval (role, owner, Basic and Primitive backing, Light/Dark, consumers) before --apply with --accept-new-tokens.`, ""] : []),
+      ...(newTokens.length ? ["## Approval needed", "", `${newTokens.length} new token(s) need the owner's approval (tier, name, owner, Semantic and Primitive backing, Light/Dark, consumers) before --apply with --accept-new-tokens.`, ""] : []),
     ];
     const report = lines.join("\n");
     if (args.report) writeFileSync(resolve(ctx.cwd, args.report), report + "\n");

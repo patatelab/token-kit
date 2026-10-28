@@ -28,7 +28,7 @@ export function checksumOf(tokens) {
 export function createBundle({ kind, tokens, config, source = {}, baselines, contracts, exportedAt = new Date().toISOString() }) {
   const bundle = { format: BUNDLE_FORMAT, version: BUNDLE_VERSION, kind, exportedAt, source, config, tokens };
   if (baselines) bundle.baselines = baselines;
-  // Flat bundles carry the tree's root $extensions (cssAliases, basicAliases, componentContexts) separately.
+  // Flat bundles carry the tree's root $extensions (cssAliases, semanticAliases, componentContexts) separately.
   if (contracts) bundle.contracts = contracts;
   bundle.checksum = checksumOf(tokens);
   return bundle;

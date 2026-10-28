@@ -10,7 +10,7 @@ export const SOURCE_RULES = {
   TOKEN_SOURCE_COLOR: "Colours come from tokens: use var(--color-…) or token(\"…\").",
   TOKEN_SOURCE_LENGTH: "Spacing, radius, type sizes and strokes come from tokens.",
   TOKEN_SOURCE_UNKNOWN_VAR: "var(--…) must name a token or a custom property declared in the same file.",
-  TOKEN_SOURCE_TIER_BYPASS: "Product code never reads internal tiers (default: Primitives and Scales).",
+  TOKEN_SOURCE_TIER_BYPASS: "Product code never reads internal tiers (default: Primitives).",
   TOKEN_SOURCE_TAILWIND_ARBITRARY: "No Tailwind arbitrary values for design properties; use the token theme.",
 };
 

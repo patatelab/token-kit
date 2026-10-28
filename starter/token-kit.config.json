@@ -11,57 +11,74 @@
   "tiers": [
     {
       "name": "primitive",
-      "label": "Primitives",
+      "label": "Foundation Collection",
       "match": {
         "roots": [
-          "foundations"
-        ],
-        "literal": true
+          "primitive"
+        ]
       },
       "references": [],
       "literals": true,
-      "internal": true
-    },
-    {
-      "name": "scale",
-      "label": "Scale",
-      "match": {
-        "roots": [
-          "foundations"
-        ]
-      },
-      "references": [
-        "primitive",
-        "scale"
-      ],
-      "internal": true
-    },
-    {
-      "name": "basic",
-      "label": "Basic",
-      "match": {
-        "prefixes": [
+      "internal": true,
+      "naming": {
+        "categories": [
           "color",
+          "font-family",
+          "font-weight",
+          "font-size",
+          "line-height",
+          "letter-spacing",
+          "size",
           "space",
           "radius",
-          "stroke",
-          "text",
-          "motion",
+          "border",
           "shadow",
-          "opacity"
+          "opacity",
+          "elevation",
+          "breakpoint",
+          "motion",
+          "z-index"
+        ]
+      }
+    },
+    {
+      "name": "semantic",
+      "label": "Alias Collection",
+      "match": {
+        "roots": [
+          "semantic"
         ]
       },
       "references": [
-        "scale",
         "primitive"
-      ]
+      ],
+      "naming": {
+        "categories": [
+          "color",
+          "spacing",
+          "radius",
+          "border-width",
+          "opacity",
+          "blur",
+          "shadow",
+          "font-family",
+          "font-size",
+          "font-weight",
+          "line-height",
+          "letter-spacing",
+          "motion",
+          "z-index",
+          "elevation",
+          "breakpoint"
+        ]
+      }
     },
     {
       "name": "component",
-      "label": "Component",
+      "label": "Control Collection",
       "match": {},
       "references": [
-        "basic"
+        "semantic"
       ],
       "families": true,
       "themes": false
@@ -74,41 +91,60 @@
       "selector": "[data-theme=\"dark\"]"
     }
   },
-  "primaryScaleRoles": {
-    "spacing.1": "space.inline-gap",
-    "spacing.2": "space.component-gap",
-    "spacing.4": "space.gutter",
-    "spacing.6": "space.section"
-  },
   "contrastPairs": [
     {
       "foreground": "color.text.default",
-      "background": "color.background.default",
+      "background": "color.bg.default",
       "min": 4.5
     },
     {
-      "foreground": "color.text.muted",
-      "background": "color.background.default",
+      "foreground": "color.text.supplementary",
+      "background": "color.bg.default",
       "min": 4.5
     },
     {
       "foreground": "color.text.inverse",
-      "background": "color.background.inverse",
+      "background": "color.bg.inverse",
       "min": 4.5
     },
     {
-      "foreground": "color.brand.on-primary",
-      "background": "color.brand.primary",
+      "foreground": "color.primary.on-primary",
+      "background": "color.primary.default",
       "min": 4.5
     },
     {
-      "foreground": "color.feedback.error",
-      "background": "color.background.default",
+      "foreground": "color.secondary.on-secondary",
+      "background": "color.secondary.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.error.default",
+      "background": "color.bg.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.error.on-error",
+      "background": "color.error.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.success.on-success",
+      "background": "color.success.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.warning.on-warning",
+      "background": "color.warning.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.info.on-info",
+      "background": "color.info.default",
       "min": 4.5
     }
   ],
   "requireDescriptions": [
-    "basic",
+    "semantic",
     "component"
   ],
   "source": {
@@ -132,5 +168,12 @@
   "baselines": {
     "ratchet": "tokens/baselines/open-review-ratchet.json",
     "knownErrors": "tokens/baselines/known-errors.json"
+  },
+  "primaryRoles": {
+    "space.050": "spacing.xs",
+    "space.100": "spacing.sm",
+    "space.200": "spacing.md",
+    "space.300": "spacing.lg",
+    "radius.500": "radius.md"
   }
 }
