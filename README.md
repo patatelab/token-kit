@@ -10,6 +10,7 @@ Design-Tokens mit klaren Ebenen, Konformitätsprüfung, Shrink-only-Ratchet, Exp
 | Copilot | `copilot/` | `copilot-instructions.md`, Instructions für CSS/TSX, Prompts `/token-export`, `/token-import`, `/token-propose`, `/token-audit` |
 | Figma-Plugin | `figma-plugin/` | Bundle als Variables importieren, global ändern, „Tokens prüfen“, konform exportieren |
 | Änderungen | `CHANGELOG.md` | Was sich je Version geändert hat, inkl. Entscheidungen und Migration |
+| Wissensbasis | `docs/knowledge/` | Tokens benennen nach Curtis (2020), mit Belegen und Bezug zum Kit |
 | Regeln | `docs/token-contract.md` | Token-Richtlinie (Ebenen, Namensschema) und der Vertrag, den `check` durchsetzt |
 | Vorlagen | `templates/` | GitHub Action für den Token-Check, Audit-Bericht R001… |
 

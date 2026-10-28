@@ -89,6 +89,7 @@ const commands = {
       ["copilot/prompts", ".github/prompts"],
       ["templates/token-check.yml", ".github/workflows/token-check.yml"],
       ["docs/token-contract.md", "docs/token-contract.md"],
+      ["docs/knowledge", "docs/knowledge"],
     ];
     for (const [from, to] of copies) {
       const target = join(cwd, to);

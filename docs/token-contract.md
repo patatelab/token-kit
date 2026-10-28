@@ -34,6 +34,8 @@ The tier roots `primitive` and `semantic` are groups marked `"$extensions": {"pa
 
 ## Naming
 
+Background and terminology: [knowledge/naming-tokens.md](knowledge/naming-tokens.md) (Curtis, 2020).
+
 Names are lowercase and hyphen-separated (`TOKEN_KEY_SYNTAX`); each name part is one group level in the token file. A name is built from these parts, in this order; parts that add nothing are left out, as long as the name stays unique.
 
 | Tier | Structure | Examples |

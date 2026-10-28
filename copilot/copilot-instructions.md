@@ -28,6 +28,8 @@ The tier model is configured in `tiers` in `token-kit.config.json`; read it befo
    - Never values, units or hex codes in names (`button-padding-16px` is wrong).
 4. **New tokens need approval.** Propose tier, name, owner, Semantic and Primitive backing, Light/Dark behaviour and consumers (use `/token-propose`). Never add them on your own authority.
 
+Background on naming levels and principles: `docs/knowledge/naming-tokens.md`.
+
 ## Gates
 
 After UI or token changes run `npx token-kit build` and `npx token-kit check`. `check` fails on any error and on open reviews above the shrink-only ratchet in `tokens/baselines/`. Never raise a baseline to make a check pass; `token-kit report --accept-new` is an explicit owner decision with a reason in the PR.
