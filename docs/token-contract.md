@@ -12,16 +12,16 @@ The token guideline defines three tiers on top of the RAW values. Each token ref
 
 ```text
 RAW value   #DC2626               16px                Alpha 50
-Primitive   color-red-600         radius-500          opacity-500               Foundation Collection
-Semantic    color-error-default   radius-md           opacity-disabled          Alias Collection
-Component   snackbar-bg-error     button-radius-md    button-opacity-disabled   Control Collection
+Primitive   color-red-600         radius-500          opacity-500               Figma: Primitive
+Semantic    color-error-default   radius-md           opacity-disabled          Figma: Semantic
+Component   snackbar-bg-error     button-radius-md    button-opacity-disabled   Figma: Components
 ```
 
 | Tier | Figma collection | Stored under | Holds | May reference |
 | --- | --- | --- | --- | --- |
-| Primitive | Foundation Collection | `primitive` | RAW values (hex, rem, ms, numbers), never consumed by product code | nothing |
-| Semantic | Alias Collection | `semantic` | meaning: usage, role, intent, scale; Light/Dark | Primitives only; another Semantic token only via `$extensions.semanticAliases` |
-| Component | Control Collection | everything else; family = component | component properties per variant, state and size | Semantic tokens and its own family; other families only via `$extensions.componentContexts` |
+| Primitive | Primitive | `primitive` | RAW values (hex, rem, ms, numbers), never consumed by product code | nothing |
+| Semantic | Semantic | `semantic` | meaning: usage, role, intent, scale; Light/Dark | Primitives only; another Semantic token only via `$extensions.semanticAliases` |
+| Component | Components | everything else; family = component | component properties per variant, state and size | Semantic tokens and its own family; other families only via `$extensions.componentContexts` |
 
 The tier model is configuration (`tiers` in `token-kit.config.json`), not code. A token belongs to the first tier whose `match` fits (`roots`, `prefixes`, `paths`, `literal`); each tier says which tiers it may reference. Tier flags: `literals` (may hold RAW values), `families`, `internal` (never read by product code), `themes: false` (inherits themes), `allowPrefixes`, `naming.categories`.
 
@@ -110,3 +110,7 @@ Import order: schema and checksum → apply onto the current tree (`--strategy m
 ## Audit reports
 
 Larger clean-ups are documented as numbered reports `docs/audits/R001-…`, using `templates/audit-report.md`: result, findings by rule, proposed fixes, decisions needed, and the baseline change afterwards.
+
+## Figma layout
+
+How variables look in Figma is configuration too (`figma` in `token-kit.config.json`, implemented in `src/core/figma-layout.mjs`). The default follows the reference file *ds-3tier-v2* ([R001](audits/R001-figma-ds-3tier-v2.md)): one collection per tier, bold block headings and section headings as divider variables, component names joined after the component (`button/bg-primary-default`), opacity in percent, font weights as style names, shadows as one variable per layer and field, scopes and "hide from publishing" by rule. Headings and dividers are not part of token names; deviations of single tokens are kept in `$extensions.figma.{scopes,hidden}`.

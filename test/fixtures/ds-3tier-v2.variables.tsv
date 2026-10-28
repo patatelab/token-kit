@@ -1,0 +1,537 @@
+# Read-only snapshot of the local variables of the Figma file "ds-3tier-v2" (2026-10-28), the target
+# structure for Figma output. One line per variable, in Figma order:
+#   name <TAB> type (C=COLOR F=FLOAT S=STRING) <TAB> value <TAB> scopes (* = ALL_SCOPES, - = none) <TAB> h (hidden from publishing)
+# Values: #hex, number, "string", @<collection initial>:<variable name> for aliases,
+# {"color":@…,"opacity":@…} for a colour with an aliased opacity.
+# Aliases to deleted variables are kept with the name Figma still resolves (color/iron/*, color/lemon-tbd/*).
+@collection	Primitive	Mode 1
+𝗦𝗪𝗔𝗧𝗖𝗛𝗘𝗦/ㅤ	C	#FFFFFF	-	h
+color/static/white	C	#FFFFFF	*
+color/static/black	C	#000000	*
+color/ㅤㅤ/ㅤ	C	#FFFFFF	-	h
+color/gray/050	C	#F9FAFB	FRAME_FILL,SHAPE_FILL,EFFECT_COLOR	h
+color/gray/100	C	#F3F4F6	FRAME_FILL,SHAPE_FILL,EFFECT_COLOR	h
+color/gray/200	C	#E5E7EB	FRAME_FILL,SHAPE_FILL,EFFECT_COLOR	h
+color/gray/300	C	#D1D5DC	FRAME_FILL,SHAPE_FILL,EFFECT_COLOR	h
+color/gray/400	C	#99A1AF	FRAME_FILL,SHAPE_FILL,EFFECT_COLOR	h
+color/gray/500	C	#6A7282	FRAME_FILL,SHAPE_FILL,EFFECT_COLOR	h
+color/gray/600	C	#4A5565	FRAME_FILL,SHAPE_FILL,EFFECT_COLOR	h
+color/gray/700	C	#333E4F	FRAME_FILL,SHAPE_FILL,EFFECT_COLOR	h
+color/gray/800	C	#1E2939	FRAME_FILL,SHAPE_FILL,EFFECT_COLOR	h
+color/gray/900	C	#101828	FRAME_FILL,SHAPE_FILL,EFFECT_COLOR	h
+color/gray/950	C	#030712	FRAME_FILL,SHAPE_FILL,EFFECT_COLOR	h
+color/slate/050	C	#F3F4F4	*	h
+color/lemon/050	C	#FFFDE6	*	h
+color/lemon/100	C	#FFF9B8	*	h
+color/lemon/200	C	#FFF38A	*	h
+color/lemon/300	C	#FFEE5C	*	h
+color/lemon/400	C	#FFE61A	*	h
+color/lemon/500	C	#FFF500	*	h
+color/lemon/600	C	#FFDD00	*	h
+color/lemon/700	C	#C7A600	*	h
+color/lemon/800	C	#8E7700	*	h
+color/lemon/900	C	#574900	*	h
+color/lemon/950	C	#382F00	*	h
+color/slate/100	C	#E7E8E9	*	h
+color/slate/200	C	#CFD2D3	*	h
+color/slate/300	C	#B7BBBD	*	h
+color/slate/400	C	#9FA5A7	*	h
+color/slate/500	C	#878E91	*	h
+color/slate/600	C	#6F787C	*	h
+color/slate/700	C	#576166	*	h
+color/slate/800	C	#3F4B50	*	h
+color/slate/900	C	#27343A	*	h
+color/slate/950	C	#0B1E25	*	h
+color/red/050	C	#FEF2F2	*	h
+color/red/100	C	#FFE2E2	*	h
+color/red/200	C	#FFC9C9	*	h
+color/red/300	C	#FFA2A2	*	h
+color/red/400	C	#FF6467	*	h
+color/red/500	C	#FB2C36	*	h
+color/red/600	C	#E7000B	*	h
+color/red/700	C	#C10007	*	h
+color/red/800	C	#9F0712	*	h
+color/red/900	C	#82181A	*	h
+color/red/950	C	#460809	*	h
+color/orange/050	C	#FFF8F1	*	h
+color/orange/100	C	#FEECDC	*	h
+color/orange/200	C	#FCD9BD	*	h
+color/orange/300	C	#FDBA8C	*	h
+color/orange/400	C	#FF8A4C	*	h
+color/orange/500	C	#FF5A1F	*	h
+color/orange/600	C	#D03801	*	h
+color/orange/700	C	#B43403	*	h
+color/orange/800	C	#8A2C0D	*	h
+color/orange/900	C	#771D1D	*	h
+color/orange/950	C	#441306	*	h
+color/green/050	C	#F0FDF4	*	h
+color/green/100	C	#DCFCE7	*	h
+color/green/200	C	#D9F9E5	*	h
+color/green/300	C	#7BF1A8	*	h
+color/green/400	C	#05DF72	*	h
+color/green/500	C	#00C950	*	h
+color/green/600	C	#00A63E	*	h
+color/green/700	C	#008236	*	h
+color/green/800	C	#016630	*	h
+color/green/900	C	#05381A	*	h
+color/green/950	C	#032E15	*	h
+color/blue/050	C	#EFF6FF	*	h
+color/blue/100	C	#DBEAFE	*	h
+color/blue/200	C	#BEDBFF	*	h
+color/blue/300	C	#8EC5FF	*	h
+color/blue/400	C	#51A2FF	*	h
+color/blue/500	C	#2B7FFF	*	h
+color/blue/600	C	#155DFC	*	h
+color/blue/700	C	#1447E6	*	h
+color/blue/800	C	#193CB8	*	h
+color/blue/900	C	#1C398E	*	h
+color/blue/950	C	#162455	*	h
+color/purple/050	C	#FAF5FF	*	h
+color/purple/100	C	#F1E3FF	*	h
+color/purple/200	C	#E2C9FF	*	h
+color/purple/300	C	#CFA7FF	*	h
+color/purple/400	C	#B37EFF	*	h
+color/purple/500	C	#9755F3	*	h
+color/purple/600	C	#7F33D8	*	h
+color/purple/700	C	#661DBB	*	h
+color/purple/800	C	#4F099E	*	h
+color/purple/900	C	#3B0080	*	h
+color/purple/950	C	#260058	*	h
+color/pink/050	C	#FFF0F3	*	h
+color/pink/100	C	#FFE0E7	*	h
+color/pink/200	C	#FFB8C8	*	h
+color/pink/300	C	#FF88A4	*	h
+color/pink/400	C	#FF527F	*	h
+color/pink/500	C	#FF2663	*	h
+color/pink/600	C	#D90E49	*	h
+color/pink/700	C	#AF0035	*	h
+color/pink/800	C	#870028	*	h
+color/pink/900	C	#61001B	*	h
+color/pink/950	C	#420011	*	h
+color/cyan/050	C	#E6FFF6	*	h
+color/cyan/100	C	#BFFFE7	*	h
+color/cyan/200	C	#80FFD2	*	h
+color/cyan/300	C	#40FFBD	*	h
+color/cyan/400	C	#1AFFB4	*	h
+color/cyan/500	C	#00FFAF	*	h
+color/cyan/600	C	#00D692	*	h
+color/cyan/700	C	#00AD76	*	h
+color/cyan/800	C	#00855A	*	h
+color/cyan/900	C	#005C3E	*	h
+color/cyan/950	C	#003D29	*	h
+ㅤ ㅤ/ㅤ	C	#FFFFFF	-	h
+𝗗𝗜𝗠𝗘𝗡𝗦𝗜𝗢𝗡/ㅤ	C	#FFFFFF	-	h
+spacing/0	F	0	GAP	h
+spacing/50	F	2	GAP	h
+spacing/100	F	4	GAP	h
+spacing/200	F	8	GAP	h
+spacing/300	F	12	GAP	h
+spacing/400	F	16	GAP	h
+spacing/500	F	20	GAP	h
+spacing/600	F	24	GAP	h
+spacing/700	F	32	GAP	h
+spacing/800	F	48	GAP	h
+spacing/900	F	64	GAP	h
+spacing/1000	F	80	GAP	h
+spacing/1100	F	96	GAP	h
+spacing/1200	F	120	GAP	h
+spacing/1300	F	160	GAP	h
+radius/0	F	0	CORNER_RADIUS	h
+radius/50	F	1	CORNER_RADIUS	h
+radius/100	F	2	CORNER_RADIUS	h
+radius/200	F	4	CORNER_RADIUS	h
+radius/300	F	8	CORNER_RADIUS	h
+radius/400	F	12	CORNER_RADIUS	h
+radius/500	F	16	CORNER_RADIUS	h
+radius/600	F	20	CORNER_RADIUS	h
+radius/700	F	24	CORNER_RADIUS	h
+radius/800	F	32	CORNER_RADIUS	h
+radius/900	F	48	CORNER_RADIUS	h
+radius/1000	F	99999	CORNER_RADIUS	h
+border/0	F	0	STROKE_FLOAT	h
+border/50	F	0.33	STROKE_FLOAT	h
+border/100	F	1	STROKE_FLOAT	h
+border/200	F	2	STROKE_FLOAT	h
+border/300	F	4	STROKE_FLOAT	h
+border/400	F	8	STROKE_FLOAT	h
+border/500	F	16	STROKE_FLOAT	h
+border/600	F	24	STROKE_FLOAT	h
+border/700	F	32	STROKE_FLOAT	h
+border/800	F	48	STROKE_FLOAT	h
+border/900	F	64	STROKE_FLOAT	h
+size/0	F	0	WIDTH_HEIGHT	h
+size/100	F	4	WIDTH_HEIGHT	h
+size/200	F	8	WIDTH_HEIGHT	h
+size/300	F	12	WIDTH_HEIGHT	h
+size/400	F	16	WIDTH_HEIGHT	h
+size/500	F	24	WIDTH_HEIGHT	h
+size/600	F	32	WIDTH_HEIGHT	h
+size/700	F	48	WIDTH_HEIGHT	h
+size/800	F	56	WIDTH_HEIGHT	h
+size/900	F	64	WIDTH_HEIGHT	h
+size/1000	F	80	WIDTH_HEIGHT	h
+size/1300	F	320	*	h
+size/1400	F	402	*	h
+size/1500	F	440	*	h
+size/1600	F	800	*	h
+size/1700	F	960	*	h
+size/1800	F	1024	*	h
+size/1900	F	1280	*	h
+size/2000	F	1440	*	h
+size/2100	F	1920	*	h
+ㅤ/ㅤ	C	#FFFFFF	-	h
+𝗘𝗙𝗙𝗘𝗖𝗧/ㅤ	C	#FFFFFF	-	h
+opacity/0	F	0	*	h
+opacity/100	F	10	*	h
+opacity/200	F	20	*	h
+opacity/300	F	30	*	h
+opacity/400	F	40	*	h
+opacity/500	F	50	*	h
+opacity/600	F	60	*	h
+opacity/700	F	70	*	h
+opacity/800	F	80	*	h
+opacity/900	F	90	*	h
+opacity/1000	F	100	*	h
+shadow/offset-x/0	F	0	*	h
+shadow/offset-x/100	F	1	*	h
+shadow/offset-x/200	F	2	*	h
+shadow/offset-x/300	F	4	*	h
+shadow/offset-x/400	F	6	*	h
+shadow/offset-x/500	F	8	*	h
+shadow/offset-x/600	F	9	*	h
+shadow/offset-y/0	F	0	*	h
+shadow/offset-y/100	F	1	*	h
+shadow/offset-y/150	F	3	*	h
+shadow/offset-y/200	F	2	*	h
+shadow/offset-y/250	F	5	*	h
+shadow/offset-y/300	F	4	*	h
+shadow/offset-y/400	F	6	*	h
+shadow/offset-y/450	F	7	*	h
+shadow/offset-y/500	F	8	*	h
+shadow/offset-y/600	F	9	*	h
+shadow/offset-y/700	F	12	*	h
+shadow/offset-y/800	F	15	*	h
+shadow/offset-y/900	F	18	*	h
+shadow/blur/0	F	0	*	h
+shadow/blur/100	F	4	*	h
+shadow/blur/200	F	6	*	h
+shadow/blur/300	F	8	*	h
+shadow/blur/350	F	9	*	h
+shadow/blur/400	F	12	*	h
+shadow/blur/500	F	15	*	h
+shadow/blur/600	F	18	*	h
+shadow/blur/700	F	22	*	h
+shadow/blur/750	F	23	*	h
+shadow/blur/800	F	28	*	h
+shadow/blur/850	F	29	*	h
+shadow/blur/900	F	35	*	h
+shadow/blur/1000	F	42	*	h
+shadow/spread/0	F	0	*	h
+shadow/spread/100	F	1	*	h
+shadow/spread/200	F	2	*	h
+shadow/spread/300	F	4	*	h
+shadow/spread/400	F	6	*	h
+shadow/spread/500	F	8	*	h
+shadow/spread/600	F	9	*	h
+shadow/color/100	C	#0000000A	*
+shadow/color/150	C	#0000000D	*
+shadow/color/200	C	#0000000F	*
+shadow/color/250	C	#00000012	*
+shadow/color/300	C	#00000014	*
+shadow/color/400	C	#0000001A	*
+shadow/color/450	C	#0000001C	*
+shadow/color/500	C	#0000001F	*
+shadow/color/600	C	#00000024	*
+shadow/color/700	C	#0000002E	*
+shadow/color/800	C	#00000033	*
+blur/0	F	0	WIDTH_HEIGHT	h
+blur/100	F	4	*	h
+blur/200	F	8	WIDTH_HEIGHT	h
+blur/300	F	12	WIDTH_HEIGHT	h
+blur/400	F	16	WIDTH_HEIGHT	h
+blur/500	F	24	WIDTH_HEIGHT	h
+blur/600	F	32	WIDTH_HEIGHT	h
+blur/700	F	48	WIDTH_HEIGHT	h
+ㅤ ㅤ ㅤ/ㅤ	C	#FFFFFF	-	h
+𝗧𝗬𝗣𝗢𝗚𝗥𝗔𝗣𝗛𝗬/ㅤ	C	#FFFFFF	-	h
+font-family/Inter	S	"Inter"	FONT_FAMILY	h
+font-family/markPro	S	"Mark Pro"	FONT_FAMILY	h
+font-weight/400	S	"Regular"	*	h
+font-weight/500	S	"Medium"	*	h
+font-weight/600	S	"Semi Bold"	*	h
+font-weight/700	S	"Bold"	*	h
+font-weight/800	S	"Heavy"	*	h
+font-size/50	F	10	FONT_SIZE	h
+font-size/100	F	12	FONT_SIZE	h
+font-size/200	F	14	FONT_SIZE	h
+font-size/300	F	16	FONT_SIZE	h
+font-size/400	F	17	FONT_SIZE	h
+font-size/500	F	20	FONT_SIZE	h
+font-size/600	F	22	FONT_SIZE	h
+font-size/700	F	28	FONT_SIZE	h
+font-size/800	F	34	FONT_SIZE	h
+line-height/100	F	12	*
+line-height/200	F	16	*
+line-height/300	F	20	*
+line-height/400	F	24	*
+line-height/500	F	28	*
+line-height/600	F	36	*
+line-height/700	F	42	*
+letter-spacing/0	F	0	*
+letter-spacing/100	F	-0.5	*
+letter-spacing/200	F	-0.2	*
+letter-spacing/300	F	0.5	*
+@collection	Semantic	light
+color/ㅤ	C	#FFFFFF	-	h
+color/𝗕𝗥𝗔𝗡𝗗/ㅤ	C	#FFFFFF	*	h
+color/𝗕𝗥𝗔𝗡𝗗/primary/brand-default	C	@P:color/lemon/500	*
+color/𝗕𝗥𝗔𝗡𝗗/primary/brand-strong	C	@P:color/lemon/600	*
+color/𝗕𝗥𝗔𝗡𝗗/primary/brand-weak	C	@P:color/lemon/400	*
+color/𝗕𝗥𝗔𝗡𝗗/primary/brand-on-primary	C	@P:color/slate/950	*
+color/𝗕𝗥𝗔𝗡𝗗/secondary/brand-default	C	@P:color/lemon-tbd/500	*
+color/𝗕𝗥𝗔𝗡𝗗/secondary/brand-strong	C	@P:color/lemon-tbd/600	*
+color/𝗕𝗥𝗔𝗡𝗗/secondary/brand-weak	C	@P:color/iron/300	*
+color/𝗕𝗥𝗔𝗡𝗗/secondary/brand-on-primary	C	@P:color/static/white	*
+color/𝗕𝗥𝗔𝗡𝗗/accent/brand-default	C	@P:color/iron/950	*
+color/𝗕𝗥𝗔𝗡𝗗/accent/brand-strong	C	@P:color/iron/700	*
+color/𝗕𝗥𝗔𝗡𝗗/accent/brand-weak	C	@P:color/iron/300	*
+color/𝗕𝗥𝗔𝗡𝗗/accent/brand-on-accent	C	@P:color/static/white	*
+color/𝗨𝗦𝗔𝗚𝗘/ㅤ	C	#FFFFFF	*	h
+color/𝗨𝗦𝗔𝗚𝗘/background/page	C	@P:color/static/white	*
+color/𝗨𝗦𝗔𝗚𝗘/background/page-alt	C	@P:color/slate/050	*
+color/𝗨𝗦𝗔𝗚𝗘/background/card	C	@P:color/slate/050	*
+color/𝗨𝗦𝗔𝗚𝗘/background/card-alt	C	@P:color/static/white	*
+color/𝗨𝗦𝗔𝗚𝗘/background/skeleton	C	@P:color/iron/200	*
+color/𝗨𝗦𝗔𝗚𝗘/background/inverse	C	@P:color/static/black	*
+color/𝗨𝗦𝗔𝗚𝗘/text/default	C	@P:color/slate/950	*
+color/𝗨𝗦𝗔𝗚𝗘/text/supplementary	C	@P:color/iron/700	*
+color/𝗨𝗦𝗔𝗚𝗘/text/disabled	C	{"color":"@P:color/slate/950","opacity":"@S:opacity/disabled"}	*
+color/𝗨𝗦𝗔𝗚𝗘/text/inverse	C	@P:color/static/white	*
+color/𝗨𝗦𝗔𝗚𝗘/border/default	C	@P:color/iron/950	*
+color/𝗨𝗦𝗔𝗚𝗘/border/supplementary	C	@P:color/iron/700	*
+color/𝗨𝗦𝗔𝗚𝗘/border/disabled	C	@P:color/iron/600	*
+color/𝗨𝗦𝗔𝗚𝗘/border/divider	C	@P:color/iron/300	*
+color/𝗨𝗦𝗔𝗚𝗘/illustration/primary-front	C	@P:color/lemon-tbd/500	*
+color/𝗨𝗦𝗔𝗚𝗘/illustration/primary-back	C	@P:color/iron/950	*
+color/𝗨𝗦𝗔𝗚𝗘/icon/default	C	@P:color/iron/950	*
+color/𝗨𝗦𝗔𝗚𝗘/icon/supplementary	C	@P:color/iron/700	*
+color/𝗨𝗦𝗔𝗚𝗘/icon/disabled	C	@P:color/iron/300	*
+color/𝗨𝗦𝗔𝗚𝗘/icon/inverse	C	@P:color/static/white	*
+color/𝗥𝗢𝗟𝗘/ㅤ	C	#FFFFFF	*	h
+color/𝗥𝗢𝗟𝗘/primary/default	C	@P:color/lemon/500	*
+color/𝗥𝗢𝗟𝗘/primary/strong	C	@P:color/lemon/600	*
+color/𝗥𝗢𝗟𝗘/primary/weak	C	@P:color/lemon/400	*
+color/𝗥𝗢𝗟𝗘/primary/on-primary	C	@P:color/slate/950	*
+color/𝗥𝗢𝗟𝗘/secondary/default	C	@P:color/slate/200	*
+color/𝗥𝗢𝗟𝗘/secondary/strong	C	@P:color/slate/400	*
+color/𝗥𝗢𝗟𝗘/secondary/weak	C	@P:color/slate/100	*
+color/𝗥𝗢𝗟𝗘/secondary/on-secondary	C	@P:color/slate/950	*
+color/𝗥𝗢𝗟𝗘/tertiary/default	C	@P:color/iron/950	*
+color/𝗥𝗢𝗟𝗘/tertiary/strong	C	#FFDD00	*
+color/𝗥𝗢𝗟𝗘/tertiary/weak	C	#FFF61A	*
+color/𝗥𝗢𝗟𝗘/tertiary/on-tertiary	C	#0B1E25	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/ㅤ	C	#FFFFFF	*	h
+color/𝗜𝗡𝗧𝗘𝗡𝗧/neutral/default	C	@P:color/slate/500	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/neutral/strong	C	@P:color/slate/700	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/neutral/weak	C	@P:color/slate/200	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/neutral/on-neutral	C	@P:color/static/white	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/info/default	C	@P:color/blue/500	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/info/strong	C	@P:color/blue/700	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/info/weak	C	@P:color/blue/200	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/info/on-info	C	@P:color/static/white	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/success/default	C	@P:color/green/500	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/success/strong	C	@P:color/green/700	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/success/weak	C	@P:color/green/200	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/success/on-success	C	@P:color/static/white	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/warning/default	C	@P:color/orange/500	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/warning/strong	C	@P:color/orange/700	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/warning/weak	C	@P:color/orange/200	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/warning/on-warning	C	@P:color/static/white	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/error/default	C	@P:color/red/500	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/error/strong	C	@P:color/red/700	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/error/weak	C	@P:color/red/200	*
+color/𝗜𝗡𝗧𝗘𝗡𝗧/error/on-error	C	@P:color/static/white	*
+ㅤ ㅤ ㅤ/ㅤ	C	#FFFFFF	-	h
+𝗗𝗜𝗠𝗘𝗡𝗦𝗜𝗢𝗡/ㅤ	C	#FFFFFF	-	h
+radius/none	F	@P:radius/0	*
+radius/xs	F	@P:radius/200	*
+radius/sm	F	@P:radius/300	*
+radius/md	F	@P:radius/500	*
+radius/lg	F	@P:radius/600	*
+radius/xl	F	@P:radius/700	*
+radius/full	F	@P:radius/1000	*
+border-width/none	F	@P:border/0	*
+border-width/xs	F	@P:border/50	*
+border-width/sm	F	@P:border/100	*
+border-width/md	F	@P:border/200	*
+spacing/none	F	@P:spacing/0	*
+spacing/3xs	F	@P:spacing/50	*
+spacing/2xs	F	@P:spacing/100	*
+spacing/xs	F	@P:spacing/200	*
+spacing/sm	F	@P:spacing/300	*
+spacing/md	F	@P:spacing/400	*
+spacing/lg	F	@P:spacing/600	*
+spacing/xl	F	@P:spacing/700	*
+spacing/2xl	F	@P:spacing/800	*
+ㅤ ㅤ/ㅤ	C	#FFFFFF	-	h
+𝗘𝗙𝗙𝗘𝗖𝗧/ㅤ	C	#FFFFFF	-	h
+opacity/disabled	F	@P:opacity/500	*
+opacity/scrim	F	@P:opacity/300	*
+blur/none	F	@P:blur/0	*
+blur/sm	F	@P:blur/100	*
+blur/md	F	@P:blur/200	*
+blur/lg	F	@P:blur/300	*
+blur/xl	F	@P:blur/400	*
+shadow/xs/layer-0/offset-x	F	@P:shadow/offset-x/0	*
+shadow/xs/layer-0/offset-y	F	@P:shadow/offset-y/150	*
+shadow/xs/layer-0/blur	F	@P:shadow/blur/400	*
+shadow/xs/layer-0/spread	F	@P:shadow/spread/0	*
+shadow/xs/layer-0/color	C	@P:shadow/color/250	*
+shadow/xs/layer-1/offset-x	F	@P:shadow/offset-x/0	*
+shadow/xs/layer-1/offset-y	F	@P:shadow/offset-y/450	*
+shadow/xs/layer-1/blur	F	@P:shadow/blur/500	*
+shadow/xs/layer-1/spread	F	@P:shadow/spread/0	*
+shadow/xs/layer-1/color	C	@P:shadow/color/450	*
+shadow/sm/layer-0/offset-x	F	@P:shadow/offset-x/0	*
+shadow/sm/layer-0/offset-y	F	@P:shadow/offset-y/300	*
+shadow/sm/layer-0/blur	F	@P:shadow/blur/600	*
+shadow/sm/layer-0/spread	F	@P:shadow/spread/0	*
+shadow/sm/layer-0/color	C	@P:shadow/color/300	*
+shadow/sm/layer-1/offset-x	F	@P:shadow/offset-x/0	*
+shadow/sm/layer-1/offset-y	F	@P:shadow/offset-y/600	*
+shadow/sm/layer-1/blur	F	@P:shadow/blur/700	*
+shadow/sm/layer-1/spread	F	@P:shadow/spread/0	*
+shadow/sm/layer-1/color	C	@P:shadow/color/500	*
+shadow/md/layer-0/offset-x	F	@P:shadow/offset-x/0	*
+shadow/md/layer-0/offset-y	F	@P:shadow/offset-y/250	*
+shadow/md/layer-0/blur	F	@P:shadow/blur/750	*
+shadow/md/layer-0/spread	F	@P:shadow/spread/0	*
+shadow/md/layer-0/color	C	@P:shadow/color/450	*
+shadow/md/layer-1/offset-x	F	@P:shadow/offset-x/0	*
+shadow/md/layer-1/offset-y	F	@P:shadow/offset-y/700	*
+shadow/md/layer-1/blur	F	@P:shadow/blur/850	*
+shadow/md/layer-1/spread	F	@P:shadow/spread/0	*
+shadow/md/layer-1/color	C	@P:shadow/color/600	*
+shadow/lg/layer-0/offset-x	F	@P:shadow/offset-x/0	*
+shadow/lg/layer-0/offset-y	F	@P:shadow/offset-y/400	*
+shadow/lg/layer-0/blur	F	@P:shadow/blur/800	*
+shadow/lg/layer-0/spread	F	@P:shadow/spread/0	*
+shadow/lg/layer-0/color	C	@P:shadow/color/500	*
+shadow/lg/layer-1/offset-x	F	@P:shadow/offset-x/0	*
+shadow/lg/layer-1/offset-y	F	@P:shadow/offset-y/800	*
+shadow/lg/layer-1/blur	F	@P:shadow/blur/900	*
+shadow/lg/layer-1/spread	F	@P:shadow/spread/0	*
+shadow/lg/layer-1/color	C	@P:shadow/color/700	*
+shadow/xl/layer-0/offset-x	F	@P:shadow/offset-x/0	*
+shadow/xl/layer-0/offset-y	F	@P:shadow/offset-y/400	*
+shadow/xl/layer-0/blur	F	@P:shadow/blur/800	*
+shadow/xl/layer-0/spread	F	@P:shadow/spread/0	*
+shadow/xl/layer-0/color	C	@P:shadow/color/600	*
+shadow/xl/layer-1/offset-x	F	@P:shadow/offset-x/0	*
+shadow/xl/layer-1/offset-y	F	@P:shadow/offset-y/900	*
+shadow/xl/layer-1/blur	F	@P:shadow/blur/1000	*
+shadow/xl/layer-1/spread	F	@P:shadow/spread/0	*
+shadow/xl/layer-1/color	C	@P:shadow/color/800	*
+ㅤ/ㅤ	C	#FFFFFF	-	h
+𝗧𝗬𝗣𝗢𝗚𝗥𝗔𝗣𝗛𝗬/ㅤ	C	#FFFFFF	-	h
+font-family/brand	S	@P:font-family/markPro	*
+font-weight/regular	S	@P:font-weight/400	*
+font-weight/medium	S	@P:font-weight/500	*
+font-weight/semibold	S	@P:font-weight/600	*
+font-weight/bold	S	@P:font-weight/700	*
+font-size/h1	F	@P:font-size/800	FONT_SIZE	h
+font-size/h2	F	@P:font-size/700	FONT_SIZE	h
+font-size/h3	F	@P:font-size/600	FONT_SIZE	h
+font-size/h4	F	@P:font-size/500	FONT_SIZE	h
+font-size/base	F	@P:font-size/400	FONT_SIZE	h
+font-size/small	F	@P:font-size/300	FONT_SIZE	h
+font-size/label	F	@P:font-size/200	FONT_SIZE	h
+font-size/caption	F	@P:font-size/100	FONT_SIZE	h
+font-size/overline	F	@P:font-size/50	FONT_SIZE	h
+line-height/h1	F	@P:line-height/700	LINE_HEIGHT	h
+line-height/h2	F	@P:line-height/600	LINE_HEIGHT	h
+line-height/h3	F	@P:line-height/500	LINE_HEIGHT	h
+line-height/h4	F	@P:line-height/400	LINE_HEIGHT	h
+line-height/base	F	@P:line-height/400	LINE_HEIGHT	h
+line-height/label	F	@P:line-height/300	LINE_HEIGHT	h
+line-height/caption	F	@P:line-height/200	LINE_HEIGHT	h
+line-height/overline	F	@P:line-height/100	LINE_HEIGHT	h
+letter-spacing/h1	F	@P:letter-spacing/100	*
+letter-spacing/h2	F	@P:letter-spacing/200	*
+letter-spacing/h3	F	@P:letter-spacing/200	*
+letter-spacing/overline	F	@P:letter-spacing/300	*
+letter-spacing/none	F	@P:letter-spacing/0	*
+@collection	Components	Value
+𝗔𝗖𝗧𝗜𝗢𝗡/ㅤ	C	#FFFFFF	-	h
+button/bg-primary-default	C	@S:color/𝗥𝗢𝗟𝗘/primary/default	*
+button/bg-secondary-default	C	@S:color/𝗥𝗢𝗟𝗘/secondary/default	*
+button/bg-primary-hover	C	@S:color/𝗥𝗢𝗟𝗘/primary/strong	*
+button/bg-secondary-hover	C	@S:color/𝗥𝗢𝗟𝗘/secondary/strong	*
+button/bg-primary-pressed	C	@S:color/𝗥𝗢𝗟𝗘/primary/strong	*
+button/bg-secondary-pressed	C	@S:color/𝗥𝗢𝗟𝗘/secondary/strong	*
+button/bg-primary-disabled	C	@S:color/𝗥𝗢𝗟𝗘/primary/default	*
+button/bg-secondary-disabled	C	@S:color/𝗥𝗢𝗟𝗘/secondary/default	*
+button/text-primary-default	C	@S:color/𝗥𝗢𝗟𝗘/primary/on-primary	*
+button/text-secondary-default	C	@S:color/𝗥𝗢𝗟𝗘/secondary/on-secondary	*
+button/text-primary-hover	C	@S:color/𝗥𝗢𝗟𝗘/primary/on-primary	*
+button/text-secondary-hover	C	@S:color/𝗥𝗢𝗟𝗘/secondary/on-secondary	*
+button/text-primary-pressed	C	@S:color/𝗥𝗢𝗟𝗘/primary/on-primary	*
+button/text-secondary-pressed	C	@S:color/𝗥𝗢𝗟𝗘/secondary/on-secondary	*
+button/text-primary-disabled	C	{"color":"@S:color/𝗥𝗢𝗟𝗘/primary/on-primary","opacity":"@S:opacity/disabled"}	*
+button/text-secondary-disabled	C	{"color":"@S:color/𝗥𝗢𝗟𝗘/secondary/on-secondary","opacity":"@S:opacity/disabled"}	*
+button/icon-primary-default	C	@S:color/𝗥𝗢𝗟𝗘/primary/on-primary	*
+button/icon-secondary-default	C	@S:color/𝗥𝗢𝗟𝗘/secondary/on-secondary	*
+button/icon-primary-hover	C	@S:color/𝗥𝗢𝗟𝗘/primary/on-primary	*
+button/icon-secondary-hover	C	@S:color/𝗥𝗢𝗟𝗘/secondary/on-secondary	*
+button/icon-primary-pressed	C	@S:color/𝗥𝗢𝗟𝗘/primary/on-primary	*
+button/icon-secondary-pressed	C	@S:color/𝗥𝗢𝗟𝗘/secondary/on-secondary	*
+button/icon-primary-disabled	C	{"color":"@S:color/𝗥𝗢𝗟𝗘/primary/on-primary","opacity":"@S:opacity/disabled"}	*
+button/icon-secondary-disabled	C	{"color":"@S:color/𝗥𝗢𝗟𝗘/secondary/on-secondary","opacity":"@S:opacity/disabled"}	*
+button/border-primary-default	C	@S:color/𝗥𝗢𝗟𝗘/primary/default	*
+button/border-secondary-default	C	@S:color/𝗥𝗢𝗟𝗘/secondary/default	*
+button/border-primary-hover	C	@S:color/𝗥𝗢𝗟𝗘/primary/strong	*
+button/border-secondary-hover	C	@S:color/𝗥𝗢𝗟𝗘/secondary/strong	*
+button/border-primary-pressed	C	@S:color/𝗥𝗢𝗟𝗘/primary/strong	*
+button/border-secondary-pressed	C	@S:color/𝗥𝗢𝗟𝗘/secondary/strong	*
+button/border-primary-disabled	C	@S:color/𝗥𝗢𝗟𝗘/primary/default	*
+button/border-secondary-disabled	C	@S:color/𝗥𝗢𝗟𝗘/secondary/default	*
+button/border-width	F	@S:border-width/none	*
+button/focus-ring-width	F	@S:border-width/sm	*
+button/radius	F	@S:radius/full	*
+button/padding-x	F	@S:spacing/md	*
+button/padding-y	F	@S:spacing/md	*
+button/gap	F	@S:spacing/xs	*
+button/font-text-size	F	@S:font-size/base	*
+button/font-weight	S	@S:font-weight/bold	*
+button/font-line-height	F	@P:line-height/400	*
+button/font-letter-spacing	F	@S:letter-spacing/none	*
+𝗙𝗘𝗘𝗗𝗕𝗔𝗖𝗞/ㅤ	C	#FFFFFF	-	h
+snackbar/default-bg	C	@S:color/𝗨𝗦𝗔𝗚𝗘/background/inverse	*
+badge/info-bg	C	@S:color/𝗨𝗦𝗔𝗚𝗘/background/inverse	*
+badge/success-bg	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/success/default	*
+badge/warning-bg	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/warning/default	*
+badge/error-bg	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/error/default	*
+badge/info-text	C	@S:color/𝗨𝗦𝗔𝗚𝗘/text/inverse	*
+badge/success-text	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/success/on-success	*
+badge/warning-text	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/warning/on-warning	*
+badge/error-text	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/error/on-error	*
+badge/md-radius	F	@S:radius/xs	*
+badge/md-padding-x	F	@P:spacing/200	*
+badge/md-padding-y	F	@P:spacing/100	*
+badge/md-gap	F	@P:spacing/100	*
+badge/sm-radius	F	@S:radius/xs	*
+badge/sm-padding-x	F	@P:spacing/200	*
+badge/sm-padding-y	F	@P:spacing/100	*
+badge/sm-gap	F	@P:spacing/50	*
+snackbar/default-text	C	@S:color/𝗨𝗦𝗔𝗚𝗘/text/inverse	*
+snackbar/default-icon	C	@S:color/𝗨𝗦𝗔𝗚𝗘/icon/inverse	*
+snackbar/default-action-text	C	@S:color/𝗨𝗦𝗔𝗚𝗘/text/inverse	*
+snackbar/error-bg	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/error/default	*
+snackbar/error-text	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/error/on-error	*
+snackbar/error-icon	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/error/on-error	*
+snackbar/error-action-text	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/error/on-error	*
+snackbar/success-bg	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/success/default	*
+snackbar/success-text	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/success/on-success	*
+snackbar/success-icon	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/success/on-success	*
+snackbar/success-action-text	C	@S:color/𝗜𝗡𝗧𝗘𝗡𝗧/success/on-success	*
+ㅤ ㅤ/ㅤ	C	#FFFFFF	*	h

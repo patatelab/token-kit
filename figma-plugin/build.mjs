@@ -7,7 +7,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const core = ["config", "sha256", "tokens", "color", "rules", "baseline", "bundle"].map((n) => resolve(here, `../src/core/${n}.mjs`));
+const core = ["config", "sha256", "tokens", "color", "rules", "baseline", "bundle", "figma-layout"].map((n) => resolve(here, `../src/core/${n}.mjs`));
 
 const strip = (source) =>
   source

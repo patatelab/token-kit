@@ -32,31 +32,101 @@ const DEFAULT_CONFIG = {
   tiers: [
     {
       name: "primitive",
-      label: "Foundation Collection",
+      label: "Primitive",
       match: { roots: ["primitive"] },
       references: [],
       literals: true,
       internal: true,
+      themes: false,
       naming: {
-        categories: ["color", "font-family", "font-weight", "font-size", "line-height", "letter-spacing", "size", "space", "radius", "border", "shadow", "opacity", "elevation", "breakpoint", "motion", "z-index"],
+        categories: ["color", "font-family", "font-weight", "font-size", "line-height", "letter-spacing", "size", "space", "spacing", "radius", "border", "shadow", "blur", "opacity", "elevation", "breakpoint", "motion", "z-index"],
       },
     },
     {
       name: "semantic",
-      label: "Alias Collection",
+      label: "Semantic",
       match: { roots: ["semantic"] },
       references: ["primitive"],
       naming: {
         categories: ["color", "spacing", "radius", "border-width", "opacity", "blur", "shadow", "font-family", "font-size", "font-weight", "line-height", "letter-spacing", "motion", "z-index", "elevation", "breakpoint"],
       },
     },
-    { name: "component", label: "Control Collection", match: {}, references: ["semantic"], families: true, themes: false },
+    { name: "component", label: "Components", match: {}, references: ["semantic"], families: true, themes: false },
   ],
   themes: {
     dark: {
       root: "dark-mode",
       mediaQuery: "(prefers-color-scheme: dark)",
       selector: '[data-theme="dark"]',
+    },
+  },
+  // How variables look in Figma (src/core/figma-layout.mjs). The default follows the reference
+  // file: collections Primitive/Semantic/Components, bold headings with divider variables,
+  // colour sections Brand/Usage/Role/Intent, component names joined after the component,
+  // opacity in percent, font weights as style names and shadows as layer variables.
+  figma: {
+    collections: {
+      primitive: { modes: { light: "Mode 1" } },
+      semantic: { modes: { light: "light", dark: "dark" } },
+      component: { modes: { light: "Value" } },
+    },
+    dividers: true,
+    blocks: {
+      primitive: [
+        { heading: "SWATCHES", prefixes: ["color"] },
+        { heading: "DIMENSION", prefixes: ["spacing", "space", "radius", "border", "size"] },
+        { heading: "EFFECT", prefixes: ["opacity", "shadow", "blur", "elevation", "z-index"] },
+        { heading: "TYPOGRAPHY", prefixes: ["font", "font-family", "font-weight", "font-size", "line-height", "letter-spacing"] },
+        { heading: "MOTION", prefixes: ["motion", "duration", "easing"] },
+      ],
+      semantic: [
+        { prefixes: ["color"] },
+        { heading: "DIMENSION", prefixes: ["radius", "border-width", "spacing", "size"] },
+        { heading: "EFFECT", prefixes: ["opacity", "blur", "shadow", "elevation", "z-index"] },
+        { heading: "TYPOGRAPHY", prefixes: ["font-family", "font-weight", "font-size", "line-height", "letter-spacing"] },
+        { heading: "MOTION", prefixes: ["motion"] },
+      ],
+      component: [
+        { heading: "ACTION", prefixes: ["button", "link", "icon-button"] },
+        { heading: "FEEDBACK", prefixes: ["snackbar", "badge", "alert", "toast"] },
+        { heading: "CONTAINMENT", prefixes: ["card", "dialog", "sheet"] },
+      ],
+    },
+    sections: {
+      semantic: [
+        { heading: "BRAND", insertAt: 1, match: ["color.brand", "color.*.brand-*", "color.accent"] },
+        { heading: "USAGE", insertAt: 1, match: ["color.bg", "color.background", "color.text", "color.border", "color.icon", "color.illustration", "color.surface"] },
+        { heading: "ROLE", insertAt: 1, match: ["color.primary", "color.secondary", "color.tertiary"] },
+        { heading: "INTENT", insertAt: 1, match: ["color.neutral", "color.info", "color.success", "color.warning", "color.error"] },
+      ],
+    },
+    joinFrom: { component: 1 },
+    percent: ["opacity"],
+    remBase: 16,
+    fontWeights: { 100: "Thin", 200: "Extra Light", 300: "Light", 400: "Regular", 500: "Medium", 600: "Semi Bold", 700: "Bold", 800: "Heavy", 900: "Black" },
+    shadowLayers: true,
+    scopes: [
+      { tiers: ["primitive"], match: ["spacing", "space"], scopes: ["GAP"] },
+      { tiers: ["primitive"], match: ["radius"], scopes: ["CORNER_RADIUS"] },
+      { tiers: ["primitive"], match: ["border"], scopes: ["STROKE_FLOAT"] },
+      { tiers: ["primitive"], match: ["size", "blur"], scopes: ["WIDTH_HEIGHT"] },
+      { tiers: ["primitive"], match: ["font-family", "font.family"], scopes: ["FONT_FAMILY"] },
+      { match: ["font-size", "font.size"], scopes: ["FONT_SIZE"] },
+      { tiers: ["semantic"], match: ["line-height"], scopes: ["LINE_HEIGHT"] },
+    ],
+    hidden: [
+      { tiers: ["primitive"], match: ["*"], hidden: true },
+      { tiers: ["semantic"], match: ["font-size", "line-height"], hidden: true },
+    ],
+    types: {
+      "font-weight": "fontWeight",
+      "font-family": "fontFamily",
+      "font-size": "dimension",
+      "line-height": "dimension",
+      "letter-spacing": "dimension",
+      opacity: "number",
+      "motion-duration": "duration",
+      duration: "duration",
     },
   },
   // One primary Semantic role per Primitive step, e.g. {"radius.500": "radius.md"}.
@@ -83,6 +153,7 @@ function resolveConfig(user = {}) {
   config.themes = { ...DEFAULT_CONFIG.themes, ...(user.themes ?? {}) };
   config.source = { ...DEFAULT_CONFIG.source, ...(user.source ?? {}) };
   config.baselines = { ...DEFAULT_CONFIG.baselines, ...(user.baselines ?? {}) };
+  config.figma = { ...DEFAULT_CONFIG.figma, ...(user.figma ?? {}) };
   if (!config.tiers?.length) throw new Error("token-kit config: tiers must not be empty");
   return config;
 }
@@ -93,8 +164,8 @@ function tierByName(config, name) {
 
 /** The subset of the config that travels inside a bundle. */
 function portableConfig(config) {
-  const { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix } = config;
-  return { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix };
+  const { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix, figma } = config;
+  return { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix, figma };
 }
 
 // ---- core/sha256.mjs
@@ -794,49 +865,148 @@ function strip({ type, value, description, themes }) {
   return { type, value, description, themes };
 }
 
-// ---- src/main.js
-// Token Kit Figma plugin (main thread). One variable collection per configured tier
-// (config.tiers, label as collection name), one mode per theme. Bundled with the pure-JS core by figma-plugin/build.mjs;
-// core functions (resolveConfig, indexTree, toFlat, indexFlat, checkModel, gateFindings, createBundle,
-// validateBundle, parseColor, formatHex, aliasOf, referencesOf) are in scope.
-// The export gate matches `token-kit check`: findings frozen in the bundle's baselines pass,
-// every other error or review blocks the export.
+// ---- core/figma-layout.mjs
+// Figma layout: maps a flat token set to Figma variables ("specs") and back. Pure JavaScript,
+// shared by the Figma plugin (which applies and reads specs) and by tests and converters.
+//
+// The layout (config.figma) describes how variables look in Figma:
+//   collections  per tier: { name, modes: { light: "light", dark: "dark" } }
+//   blocks       per tier: ordered [{ heading, prefixes }]; a heading becomes a divider variable "𝗛𝗘𝗔𝗗𝗜𝗡𝗚/ㅤ"
+//   sections     per tier: [{ heading, insertAt, match }]; inserts "𝗛𝗘𝗔𝗗𝗜𝗡𝗚" as a name segment
+//                (color/𝗨𝗦𝗔𝗚𝗘/background/page) and emits "color/𝗨𝗦𝗔𝗚𝗘/ㅤ" before the section
+//   joinFrom     per tier: name segments from this index are joined with "-" (button/bg-primary-default)
+//   percent      categories whose numbers are 0–100 in Figma (opacity 0.5 -> 50)
+//   remBase      px per rem; rem/em dimensions are shown in px
+//   fontWeights  numeric weight -> Figma style name (fontWeight tokens become STRING variables)
+//   shadowLayers shadow tokens become one variable per layer and field (shadow/sm/layer-0/blur)
+//   scopes       [{ tiers?, match, scopes }] first match wins, default ALL_SCOPES
+//   hidden       [{ tiers?, match, hidden }] first match wins, default false
+//   types        category -> $type for variables that were created in Figma
+// Per token, $extensions.figma.{scopes,hidden} override the rules.
+//
+// Spec variable: { collection, name, type: COLOR|FLOAT|STRING, values: { <theme>: value }, scopes, hidden,
+//   description, meta } with value = literal (hex string, number, string) | { alias: key } |
+//   { color: { alias }, opacity: { alias } }. Keys are "<collection>|<name>". meta is null for dividers
+//   and otherwise holds what a lossless round trip needs (path, tier, type, unit, form, ext, part, orig).
 
-const KEY = { path: "tk:path", tier: "tk:tier", type: "tk:type", unit: "tk:unit", form: "tk:form", ext: "tk:ext", themes: "tk:themes" };
-const ROOT_KEY = { config: "tk:config", meta: "tk:meta", unmapped: "tk:unmapped", baselines: "tk:baselines", contracts: "tk:contracts" };
 
-figma.showUI(__html__, { width: 420, height: 560, themeColors: true });
 
-const collectionName = (tier) => tier.label ?? tier.name[0].toUpperCase() + tier.name.slice(1);
-const modeLabel = (theme) => (theme === "light" ? "Light" : theme[0].toUpperCase() + theme.slice(1));
-const varName = (path) => path.split(".").join("/");
-const pathFromName = (name) => name.split("/").map((s) => s.trim().toLowerCase().replace(/\s+/g, "-")).join(".");
+const FILLER = "ㅤ"; // HANGUL FILLER, renders as blank space in Figma
 
-function storedConfig() {
-  const raw = figma.root.getPluginData(ROOT_KEY.config);
-  return resolveConfig(raw ? JSON.parse(raw) : {});
+const BOLD = [
+  [0x41, 0x5a, 0x1d5d4],
+  [0x61, 0x7a, 0x1d5ee],
+  [0x30, 0x39, 0x1d7ec],
+];
+
+function boldText(text) {
+  return [...text]
+    .map((ch) => {
+      const c = ch.codePointAt(0);
+      const range = BOLD.find(([a, z]) => c >= a && c <= z);
+      return range ? String.fromCodePoint(range[2] + c - range[0]) : ch;
+    })
+    .join("");
 }
 
-/** Root-level $extensions contracts (cssAliases, semanticAliases, componentContexts) of the imported tokens. */
-function storedContracts() {
-  const raw = figma.root.getPluginData(ROOT_KEY.contracts);
-  return raw ? JSON.parse(raw) : undefined;
+const isBoldChar = (ch) => {
+  const c = ch.codePointAt(0);
+  return c >= 0x1d5d4 && c <= 0x1d7ff;
+};
+const isFiller = (seg) => seg.length > 0 && [...seg].every((ch) => ch === FILLER || ch === " ");
+const isHeading = (seg) => [...seg].some(isBoldChar) && [...seg].every((ch) => isBoldChar(ch) || ch === " " || ch === FILLER);
+
+/** True for divider variables (headings and spacers that only structure the Figma panel). */
+function isDividerName(name) {
+  return isFiller(name.split("/").at(-1));
 }
 
-// ---------------------------------------------------------------- import
+const SHADOW_FIELDS = { "offset-x": "offsetX", "offset-y": "offsetY", blur: "blur", spread: "spread", color: "color" };
+const SHADOW_PART = /^(.+)\/layer-(\d+)\/(offset-x|offset-y|blur|spread|color)$/;
 
-/** How a literal value is represented as a Figma variable, or null when it is not representable. */
-function toFigmaLiteral(type, value) {
+function globMatch(pattern, path) {
+  const p = pattern.split(".");
+  const s = path.split(".");
+  if (p.length > s.length) return false;
+  return p.every((seg, i) => new RegExp(`^${seg.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`).test(s[i]));
+}
+
+const firstRule = (rules, tier, path) => (rules ?? []).find((r) => (!r.tiers || r.tiers.includes(tier)) && r.match.some((m) => globMatch(m, path)));
+
+const category = (layout, path) => {
+  const name = path.split(".").join("-");
+  return Object.keys(layout.types ?? {})
+    .concat(layout.percent ?? [])
+    .sort((a, b) => b.length - a.length)
+    .find((c) => name === c || name.startsWith(c + "-"));
+};
+
+function figmaLayout(config) {
+  const layout = config.figma ?? {};
+  return { ...layout, collections: layout.collections ?? {}, remBase: layout.remBase ?? 16 };
+}
+
+function collectionNameOf(config, tier) {
+  const t = typeof tier === "string" ? config.tiers.find((x) => x.name === tier) : tier;
+  return figmaLayout(config).collections[t.name]?.name ?? t.label ?? t.name[0].toUpperCase() + t.name.slice(1);
+}
+
+function themesOf(config, tier) {
+  const t = config.tiers.find((x) => x.name === tier);
+  return t?.themes === false ? ["light"] : ["light", ...Object.keys(config.themes ?? {})];
+}
+
+function modeNameOf(config, tier, theme) {
+  return figmaLayout(config).collections[tier]?.modes?.[theme] ?? (theme === "light" ? "Light" : theme[0].toUpperCase() + theme.slice(1));
+}
+
+function sectionOf(layout, tier, path) {
+  return (layout.sections?.[tier] ?? []).find((s) => s.match.some((m) => globMatch(m, path)));
+}
+
+/** Figma variable name of a token path. */
+function figmaNameOf(config, tier, path) {
+  const layout = figmaLayout(config);
+  let segs = path.split(".");
+  const join = layout.joinFrom?.[tier];
+  if (join !== undefined && segs.length > join + 1) segs = [...segs.slice(0, join), segs.slice(join).join("-")];
+  const section = sectionOf(layout, tier, path);
+  if (section) segs.splice(Math.min(section.insertAt ?? 1, segs.length - 1), 0, boldText(section.heading));
+  return segs.join("/");
+}
+
+/** Token path of a Figma variable name (headings removed, segments as written). */
+function pathOfFigmaName(name) {
+  return name
+    .split("/")
+    .filter((s) => !isHeading(s))
+    .map((s) => s.trim().replace(/\s+/g, "-"))
+    .join(".");
+}
+
+// ---------------------------------------------------------------- values
+
+const round = (n) => Math.round(n * 10000) / 10000;
+
+/** Figma literal for a token literal, or null when Figma cannot hold it natively. */
+function toFigmaLiteral(layout, path, type, value) {
   if (type === "color") {
     const c = parseColor(value);
-    return c && { resolvedType: "COLOR", value: c, unit: "", form: "string" };
+    return c && { resolvedType: "COLOR", value: formatHex(c), unit: "", form: "string" };
+  }
+  const percent = (layout.percent ?? []).includes(category(layout, path));
+  if (type === "fontWeight" && layout.fontWeights) {
+    const name = layout.fontWeights[String(value)];
+    if (name) return { resolvedType: "STRING", value: name, unit: "", form: typeof value === "number" ? "number" : "string" };
+    if (typeof value === "string" && !/^\d+$/.test(value)) return { resolvedType: "STRING", value, unit: "", form: "string" };
   }
   if (type === "dimension" || type === "duration" || type === "number" || type === "fontWeight") {
-    if (typeof value === "number") return { resolvedType: "FLOAT", value, unit: "", form: "number" };
-    if (value && typeof value === "object" && typeof value.value === "number")
-      return { resolvedType: "FLOAT", value: value.value, unit: value.unit ?? "", form: "object" };
+    const scale = (n, unit) => (unit === "rem" || unit === "em" ? n * layout.remBase : percent ? n * 100 : n);
+    if (typeof value === "number") return { resolvedType: "FLOAT", value: round(scale(value, "")), unit: "", form: "number" };
+    if (isPlainObject(value) && typeof value.value === "number")
+      return { resolvedType: "FLOAT", value: round(scale(value.value, value.unit)), unit: value.unit ?? "", form: "object" };
     const m = typeof value === "string" && value.trim().match(/^(-?\d*\.?\d+)(px|rem|em|%|ms|s)?$/);
-    if (m) return { resolvedType: "FLOAT", value: parseFloat(m[1]), unit: m[2] ?? "", form: "string" };
+    if (m) return { resolvedType: "FLOAT", value: round(scale(parseFloat(m[1]), m[2])), unit: m[2] ?? "", form: "string" };
     if (type === "fontWeight" && typeof value === "string") return { resolvedType: "STRING", value, unit: "", form: "string" };
     return null;
   }
@@ -848,21 +1018,109 @@ function toFigmaLiteral(type, value) {
   return null;
 }
 
+/** Token literal for a Figma literal. meta: {type, unit, form} when known. */
+function fromFigmaLiteral(layout, path, resolvedType, raw, meta = {}) {
+  const type = meta.type || inferType(layout, path, resolvedType);
+  if (resolvedType === "COLOR") return typeof raw === "string" ? raw.toUpperCase() : formatHex(raw);
+  if (resolvedType === "FLOAT") {
+    const percent = (layout.percent ?? []).includes(category(layout, path));
+    const unit = meta.unit ?? (type === "dimension" ? "px" : type === "duration" ? "ms" : "");
+    const n = round(unit === "rem" || unit === "em" ? raw / layout.remBase : percent ? raw / 100 : raw);
+    if (meta.form === "object") return { value: n, unit };
+    if (meta.form === "number" || !unit) return n;
+    return `${n}${unit}`;
+  }
+  if (resolvedType === "STRING") {
+    if (type === "fontWeight" && layout.fontWeights) {
+      const weight = Object.entries(layout.fontWeights).find(([, name]) => name.toLowerCase() === String(raw).toLowerCase());
+      if (weight) return meta.form === "string" ? weight[0] : Number(weight[0]);
+    }
+    if (meta.form === "array") return String(raw).split(",").map((s) => s.trim());
+    return raw;
+  }
+  return raw;
+}
+
+function inferType(layout, path, resolvedType) {
+  const c = category(layout, path);
+  if (c && layout.types?.[c]) return layout.types[c];
+  return { COLOR: "color", FLOAT: "dimension", STRING: "string", BOOLEAN: "boolean" }[resolvedType];
+}
+
+const toText = (value) => (typeof value === "string" ? value : JSON.stringify(value));
+
+function fromText(raw) {
+  const t = String(raw).trim();
+  if (!/^[[{]/.test(t) || aliasOf(t)) return { value: raw };
+  try {
+    return { value: JSON.parse(t) };
+  } catch {
+    // Text with references ("{a.b} solid") is a string, not broken JSON.
+    return referencesOf(t).length && !/^\[/.test(t) ? { value: raw } : { value: raw, invalid: true };
+  }
+}
+
+// Figma type for a token type, used when an alias target is missing.
+function nativeTypeOf(type) {
+  if (type === "color") return "COLOR";
+  if (["dimension", "number", "duration", "fontWeight"].includes(type)) return "FLOAT";
+  if (["fontFamily", "string"].includes(type)) return "STRING";
+  return null;
+}
+
+const isColorOpacity = (v) => isPlainObject(v) && Object.keys(v).length === 2 && aliasOf(v.color) && aliasOf(v.opacity);
+
+// ---------------------------------------------------------------- tokens -> specs
+
 /**
- * Decides the Figma type of every token. Values Figma can hold natively (colours, numbers with
- * a unit, strings) become COLOR/FLOAT/STRING variables with aliases kept; everything else
- * (easing curves, shadows, typography composites, calc()/color-mix() expressions, mixed types
- * across themes) becomes an editable STRING variable in "text" form: strings as written,
- * composites as JSON. So every token in the bundle is maintainable in Figma.
+ * Plans the Figma variables for a flat token set (see toFlat). Every token becomes at least one
+ * variable: native COLOR/FLOAT/STRING where Figma can hold the value (aliases kept), shadow layers
+ * when configured, otherwise an editable STRING in "text" form (JSON for composites).
  */
-function planVariables(flat) {
-  const plan = new Map(); // path -> mode values ({alias} | literal) or null for text form
-  const resolved = new Map(); // path -> resolvedType
-  const literalPlan = (item, value) => (aliasOf(value) ? { alias: aliasOf(value) } : toFigmaLiteral(item.type, value));
+function toFigmaSpecs(flat, config) {
+  const layout = figmaLayout(config);
+  const tierNames = new Set(config.tiers.map((t) => t.name));
+  const tierOfItem = (item) => (tierNames.has(item.tier) ? item.tier : config.tiers.at(-1).name);
+  const themeValues = (path, item) => {
+    const out = {};
+    for (const theme of themesOf(config, tierOfItem(item))) {
+      const v = theme === "light" ? item.value : item.themes?.[theme] ?? item.value;
+      if (v !== undefined) out[theme] = v;
+    }
+    return out;
+  };
+
+  // Shadow layers: count per token (following aliases), null when not layerable.
+  const layerMemo = new Map();
+  const layersOf = (path, seen = new Set()) => {
+    if (layerMemo.has(path)) return layerMemo.get(path);
+    const item = flat[path];
+    let result = null;
+    if (layout.shadowLayers && item?.type === "shadow" && !seen.has(path)) {
+      seen.add(path);
+      const counts = Object.values(themeValues(path, item)).map((v) => {
+        if (aliasOf(v)) return flat[aliasOf(v)]?.type === "shadow" ? layersOf(aliasOf(v), seen) : null;
+        const list = Array.isArray(v) ? v : isPlainObject(v) ? [v] : null;
+        if (!list || list.some((l) => !isPlainObject(l) || l.inset || Object.keys(l).some((k) => !Object.values(SHADOW_FIELDS).includes(k)))) return null;
+        return list.length;
+      });
+      result = counts.length && counts.every((n) => n && n === counts[0]) ? counts[0] : null;
+    }
+    layerMemo.set(path, result);
+    return result;
+  };
+
+  // Native plan per token: values per theme as {alias} | literal | {colorOpacity}; null = text form.
+  const plan = new Map();
+  const resolved = new Map();
   for (const [path, item] of Object.entries(flat)) {
-    if (item.value === undefined) continue;
-    const values = [item.value, ...Object.values(item.themes ?? {})].map((v) => literalPlan(item, v));
-    const literalTypes = new Set(values.filter((v) => v && !v.alias).map((v) => v.resolvedType));
+    if (item.value === undefined || layersOf(path)) continue;
+    const values = Object.values(themeValues(path, item)).map((v) => {
+      if (aliasOf(v)) return { alias: aliasOf(v) };
+      if (item.type === "color" && isColorOpacity(v)) return { colorOpacity: true };
+      return toFigmaLiteral(layout, path, item.type, v);
+    });
+    const literalTypes = new Set(values.filter((v) => v && !v.alias).map((v) => (v.colorOpacity ? "COLOR" : v.resolvedType)));
     if (values.includes(null) || literalTypes.size > 1) {
       plan.set(path, null);
       resolved.set(path, "STRING");
@@ -873,7 +1131,9 @@ function planVariables(flat) {
     changed = false;
     for (const [path, values] of plan) {
       if (resolved.has(path)) continue;
-      const types = values.map((v) => (v.alias ? (plan.has(v.alias) ? resolved.get(v.alias) : null) : v.resolvedType));
+      const types = values.map((v) =>
+        v.alias ? (plan.has(v.alias) ? resolved.get(v.alias) : flat[v.alias] ? null : nativeTypeOf(flat[path].type)) : v.colorOpacity ? "COLOR" : v.resolvedType,
+      );
       if (types.includes(undefined)) continue;
       const set = new Set(types);
       if (set.has(null) || set.size > 1) plan.set(path, null);
@@ -886,142 +1146,169 @@ function planVariables(flat) {
       plan.set(path, null); // alias cycle: keep it visible as text, the check reports the cycle
       resolved.set(path, "STRING");
     }
-  return { resolved, plan };
-}
 
-const toText = (value) => (typeof value === "string" ? value : JSON.stringify(value));
-function fromText(raw) {
-  const t = String(raw).trim();
-  if (!/^[[{]/.test(t) || aliasOf(t)) return { value: raw };
-  try {
-    return { value: JSON.parse(t) };
-  } catch {
-    // Text with references ("{a.b} solid") is a string, not broken JSON.
-    return referencesOf(t).length && !/^\[/.test(t) ? { value: raw } : { value: raw, invalid: true };
-  }
-}
+  // Targets missing from the set (broken references) keep their name in the referenced tier.
+  const missingTier = (from) => config.tiers.find((t) => t.name === tierOfItem(flat[from]))?.references?.[0] ?? tierOfItem(flat[from]);
+  const keyOf = (path, part, from) => {
+    const tier = flat[path] ? tierOfItem(flat[path]) : missingTier(from);
+    const name = figmaNameOf(config, tier, path);
+    return `${collectionNameOf(config, tier)}|${part ? `${name}/layer-${part.layer}/${part.field}` : name}`;
+  };
+  const scopesFor = (tier, path, item) => item.extensions?.figma?.scopes ?? firstRule(layout.scopes, tier, path)?.scopes ?? ["ALL_SCOPES"];
+  const hiddenFor = (tier, path, item) => item.extensions?.figma?.hidden ?? firstRule(layout.hidden, tier, path)?.hidden ?? false;
+  const extWithoutFigma = (ext) => {
+    if (!ext) return undefined;
+    const { figma, ...rest } = ext;
+    return Object.keys(rest).length ? rest : undefined;
+  };
 
-async function ensureCollection(name, existing, themes) {
-  let collection = existing.find((c) => c.name === name);
-  if (!collection) {
-    collection = figma.variables.createVariableCollection(name);
-    collection.renameMode(collection.modes[0].modeId, "Light");
-  }
-  const modes = {};
-  for (const theme of themes) {
-    const label = modeLabel(theme);
-    let mode = collection.modes.find((m) => m.name === label);
-    if (!mode && theme === "light") mode = collection.modes[0];
-    modes[theme] = mode ? mode.modeId : collection.addMode(label);
-  }
-  return { collection, modes };
-}
-
-async function importBundle(bundle) {
-  const errors = validateBundle(bundle);
-  if (errors.length) return { ok: false, errors };
-  const config = resolveConfig(bundle.config);
-  const flat = bundle.kind === "tree" ? toFlat(indexTree(bundle.tokens, config)) : bundle.tokens;
-  const themes = ["light", ...Object.keys(config.themes ?? {})];
-  const { resolved, plan } = planVariables(flat);
-
-  const existingCollections = await figma.variables.getLocalVariableCollectionsAsync();
-  const collections = {};
-  for (const tier of config.tiers) collections[tier.name] = await ensureCollection(collectionName(tier), existingCollections, themes);
-  const fallbackTier = config.tiers.at(-1).name;
-
-  const existing = new Map();
-  for (const v of await figma.variables.getLocalVariablesAsync()) {
-    const p = v.getPluginData(KEY.path);
-    if (p) existing.set(p, v);
-  }
-
-  // Pass 1: create or retype variables.
-  const variables = new Map();
-  for (const [path, resolvedType] of resolved) {
-    const item = flat[path];
-    const tier = collections[item.tier] ? item.tier : fallbackTier;
-    const { collection } = collections[tier];
-    let v = existing.get(path);
-    if (v && (v.resolvedType !== resolvedType || v.variableCollectionId !== collection.id)) {
-      v.remove();
-      v = null;
+  const specsByTier = new Map(config.tiers.map((t) => [t.name, []]));
+  for (const [path, item] of Object.entries(flat)) {
+    if (item.value === undefined) continue;
+    const tier = tierOfItem(item);
+    const collection = collectionNameOf(config, tier);
+    const name = figmaNameOf(config, tier, path);
+    const base = { collection, scopes: scopesFor(tier, path, item), hidden: hiddenFor(tier, path, item), description: item.description ?? "" };
+    const meta = { path, tier, type: item.type ?? "", ext: extWithoutFigma(item.extensions), themes: Object.keys(item.themes ?? {}), figmaExt: item.extensions?.figma };
+    const values = themeValues(path, item);
+    const count = layersOf(path);
+    if (count) {
+      for (let layer = 0; layer < count; layer++)
+        for (const [field, key] of Object.entries(SHADOW_FIELDS)) {
+          const spec = { ...base, name: `${name}/layer-${layer}/${field}`, type: field === "color" ? "COLOR" : "FLOAT", values: {}, meta: { ...meta, part: { layer, field }, orig: {} } };
+          if (layer || field !== "offset-x") spec.description = "";
+          for (const [theme, v] of Object.entries(values)) {
+            if (aliasOf(v)) {
+              spec.values[theme] = { alias: keyOf(aliasOf(v), { layer, field }, path) };
+              continue;
+            }
+            const part = (Array.isArray(v) ? v : [v])[layer][key] ?? (field === "color" ? "#00000000" : "0px");
+            if (aliasOf(part)) spec.values[theme] = { alias: keyOf(aliasOf(part), undefined, path) };
+            else {
+              const lit = toFigmaLiteral(layout, path, field === "color" ? "color" : "dimension", part);
+              spec.values[theme] = lit ? lit.value : field === "color" ? "#00000000" : 0;
+              spec.meta.unit = lit?.unit ?? "px";
+              spec.meta.form = lit?.form ?? "string";
+            }
+            spec.meta.orig[theme] = { figma: spec.values[theme], value: v };
+          }
+          specsByTier.get(tier).push(spec);
+        }
+      continue;
     }
-    if (!v) v = figma.variables.createVariable(varName(path), collection, resolvedType);
-    v.description = item.description ?? "";
-    const text = plan.get(path) === null;
-    const literal = text ? { unit: "", form: "text" } : plan.get(path).find((x) => !x.alias);
-    v.setPluginData(KEY.path, path);
-    v.setPluginData(KEY.tier, tier);
-    v.setPluginData(KEY.type, item.type ?? "");
-    v.setPluginData(KEY.unit, literal ? literal.unit : "");
-    v.setPluginData(KEY.form, literal ? literal.form : "");
-    v.setPluginData(KEY.ext, item.extensions ? JSON.stringify(item.extensions) : "");
-    v.setPluginData(KEY.themes, JSON.stringify(Object.keys(item.themes ?? {})));
-    variables.set(path, v);
-  }
-
-  // Pass 2: values per mode.
-  for (const [path, v] of variables) {
-    const item = flat[path];
-    const { modes } = collections[collections[item.tier] ? item.tier : fallbackTier];
-    for (const theme of themes) {
-      const value = theme === "light" ? item.value : item.themes?.[theme] ?? item.value;
-      if (plan.get(path) === null) {
-        v.setValueForMode(modes[theme], toText(value));
-        v.setPluginData(`tk:orig:${theme}`, JSON.stringify({ figma: toText(value), value }));
-        continue;
+    const values0 = plan.get(path);
+    const spec = { ...base, name, type: resolved.get(path), values: {}, meta: { ...meta, orig: {} } };
+    if (values0 === null) {
+      spec.meta.form = "text";
+      spec.meta.unit = "";
+      for (const [theme, v] of Object.entries(values)) {
+        spec.values[theme] = toText(v);
+        spec.meta.orig[theme] = { figma: toText(v), value: v };
       }
-      const target = aliasOf(value);
-      if (target) {
-        const t = variables.get(target);
-        // Unit/form of aliases follow the target; remember the target's for literals set later in Figma.
-        if (!v.getPluginData(KEY.unit)) v.setPluginData(KEY.unit, t.getPluginData(KEY.unit));
-        if (!v.getPluginData(KEY.form) && t.getPluginData(KEY.form) !== "text") v.setPluginData(KEY.form, t.getPluginData(KEY.form));
-        v.setValueForMode(modes[theme], figma.variables.createVariableAlias(t));
-      } else {
-        const literal = toFigmaLiteral(item.type, value).value;
-        v.setValueForMode(modes[theme], literal);
-        // Remember the source spelling (#fff vs #FFFFFF, "1rem" vs {value,unit}) for an unchanged export.
-        v.setPluginData(`tk:orig:${theme}`, JSON.stringify({ figma: literal, value }));
+    } else {
+      for (const [theme, v] of Object.entries(values)) {
+        if (aliasOf(v)) spec.values[theme] = { alias: keyOf(aliasOf(v), undefined, path) };
+        else if (isColorOpacity(v))
+          spec.values[theme] = { color: { alias: keyOf(aliasOf(v.color), undefined, path) }, opacity: { alias: keyOf(aliasOf(v.opacity), undefined, path) } };
+        else {
+          const lit = toFigmaLiteral(layout, path, item.type, v);
+          spec.values[theme] = lit.value;
+          spec.meta.unit = lit.unit;
+          spec.meta.form = lit.form;
+          spec.meta.orig[theme] = { figma: lit.value, value: v };
+        }
       }
     }
+    specsByTier.get(tier).push(spec);
   }
 
-  const unmapped = {};
-  for (const [path, item] of Object.entries(flat)) if (!variables.has(path)) unmapped[path] = item;
-  figma.root.setPluginData(ROOT_KEY.unmapped, JSON.stringify(unmapped));
-  figma.root.setPluginData(ROOT_KEY.config, JSON.stringify(bundle.config));
-  if (bundle.baselines) figma.root.setPluginData(ROOT_KEY.baselines, JSON.stringify(bundle.baselines));
-  const contracts = bundle.kind === "tree" ? bundle.tokens.$extensions : bundle.contracts;
-  figma.root.setPluginData(ROOT_KEY.contracts, contracts ? JSON.stringify(contracts) : "");
-  figma.root.setPluginData(ROOT_KEY.meta, JSON.stringify({ checksum: bundle.checksum, source: bundle.source, importedAt: new Date().toISOString() }));
-  return { ok: true, variables: variables.size, unmapped: Object.keys(unmapped).length };
+  // Unit/form of aliases follow their target, so literals typed later in Figma keep the unit.
+  const byKey = new Map();
+  for (const list of specsByTier.values()) for (const s of list) byKey.set(`${s.collection}|${s.name}`, s);
+  const unitOf = (spec, seen = new Set()) => {
+    if (spec.meta.form !== undefined || seen.has(spec)) return spec.meta;
+    seen.add(spec);
+    const alias = Object.values(spec.values).find((v) => v?.alias)?.alias;
+    const target = alias && byKey.get(alias);
+    return target ? unitOf(target, seen) : {};
+  };
+  for (const list of specsByTier.values())
+    for (const s of list)
+      if (s.meta.form === undefined) {
+        const t = unitOf(s);
+        s.meta.unit = t.unit ?? "";
+        s.meta.form = t.form === "text" ? "" : t.form ?? "";
+      }
+
+  // Order by blocks and sections, with divider variables.
+  const collections = [];
+  const variables = [];
+  for (const tier of config.tiers) {
+    const collection = collectionNameOf(config, tier);
+    collections.push({ tier: tier.name, name: collection, modes: themesOf(config, tier.name).map((theme) => ({ theme, name: modeNameOf(config, tier.name, theme) })) });
+    const list = specsByTier.get(tier.name);
+    const blocks = layout.blocks?.[tier.name] ?? [];
+    const blockOf = (s) => blocks.findIndex((b) => b.prefixes.some((p) => globMatch(p, s.meta.path)));
+    const sections = layout.sections?.[tier.name] ?? [];
+    const sectionIndex = (s) => sections.indexOf(sectionOf(layout, tier.name, s.meta.path));
+    const ordered = [...blocks.keys(), -1].map((b) => list.filter((s) => blockOf(s) === b));
+    let spacer = 0;
+    const divider = (name) => ({ collection, name, type: "COLOR", values: { light: "#FFFFFF" }, scopes: [], hidden: true, description: "", meta: null });
+    ordered.forEach((group, b) => {
+      if (!group.length) return;
+      const block = blocks[b];
+      if (layout.dividers && block) {
+        if (spacer > 0) variables.push(divider(`${Array(spacer).fill(FILLER).join(" ")}/${FILLER}`));
+        spacer++;
+        if (block.heading) variables.push(divider(`${boldText(block.heading)}/${FILLER}`));
+      }
+      const bySection = [...sections.keys(), -1].map((i) => group.filter((s) => sectionIndex(s) === i));
+      bySection.forEach((items, i) => {
+        if (!items.length) return;
+        if (layout.dividers && sections[i]) {
+          const at = sections[i].insertAt ?? 1;
+          variables.push(divider([...items[0].name.split("/").slice(0, at), boldText(sections[i].heading), FILLER].join("/")));
+        }
+        variables.push(...naturalOrder(items));
+      });
+    });
+  }
+  return { collections, variables };
 }
 
-// ---------------------------------------------------------------- export
-
-function fromFigmaLiteral(v, raw, invalid) {
-  const unit = v.getPluginData(KEY.unit);
-  const form = v.getPluginData(KEY.form);
-  if (form === "text") {
-    const parsed = fromText(raw);
-    if (parsed.invalid) invalid.push(v.getPluginData(KEY.path) || v.name);
-    return parsed.value;
+// JSON objects list integer-like keys first ("100" before "050"); Figma lists steps in scale order.
+// Keeps the order of first appearance, but sorts numeric siblings numerically.
+function naturalOrder(specs) {
+  const root = new Map();
+  for (const spec of specs) {
+    let node = root;
+    for (const seg of spec.name.split("/")) {
+      if (!node.has(seg)) node.set(seg, { children: new Map(), specs: [] });
+      const next = node.get(seg);
+      node = next.children;
+      if (seg === spec.name.split("/").at(-1)) next.specs.push(spec);
+    }
   }
-  if (v.resolvedType === "COLOR") return formatHex(raw);
-  if (v.resolvedType === "FLOAT") {
-    const n = Math.round(raw * 10000) / 10000;
-    if (form === "number" || (!unit && form !== "object")) return form === "string" ? String(n) : n;
-    return form === "object" ? { value: n, unit } : `${n}${unit}`;
-  }
-  if (v.resolvedType === "STRING") return form === "array" ? raw.split(",").map((s) => s.trim()) : raw;
-  return raw;
+  const out = [];
+  const walk = (node) => {
+    const keys = [...node.keys()];
+    const numeric = keys.filter((k) => /^\d+$/.test(k)).sort((a, b) => Number(a) - Number(b));
+    let n = 0;
+    for (const key of keys.map((k) => (/^\d+$/.test(k) ? numeric[n++] : k))) {
+      out.push(...node.get(key).specs);
+      walk(node.get(key).children);
+    }
+  };
+  walk(root);
+  return out;
 }
+
+// ---------------------------------------------------------------- specs -> tokens
 
 /** Deep equality with float tolerance (Figma stores numbers and colour channels as float32). */
 function sameFigmaValue(a, b) {
   if (typeof a === "number" && typeof b === "number") return Math.abs(a - b) <= 1e-6 * Math.max(1, Math.abs(a), Math.abs(b));
+  if (typeof a === "string" && typeof b === "string" && /^#/.test(a) && /^#/.test(b)) return formatHex(parseColor(a)) === formatHex(parseColor(b));
   if (a && b && typeof a === "object" && typeof b === "object") {
     const keys = Object.keys(a);
     return keys.length === Object.keys(b).length && keys.every((k) => sameFigmaValue(a[k], b[k]));
@@ -1029,53 +1316,345 @@ function sameFigmaValue(a, b) {
   return a === b;
 }
 
-const DEFAULT_TYPE = { COLOR: "color", FLOAT: "dimension", STRING: "string", BOOLEAN: "boolean" };
+const sameSet = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
 
-async function collectFlat() {
-  const config = storedConfig();
-  const themes = ["light", ...Object.keys(config.themes ?? {})];
-  const collections = await figma.variables.getLocalVariableCollectionsAsync();
+/**
+ * Reads Figma variables back into a flat token set.
+ * specs: { collections: [{ name, tier? }], variables: [{ key, collection, name, type, values: { <theme>: raw },
+ *   scopes, hidden, description, meta? }] } with aliases as { alias: key, name?, collection? }
+ * (name/collection describe targets that are not in the list, e.g. deleted variables).
+ * Returns { flat, created, invalid, dividers }.
+ */
+function fromFigmaSpecs(specs, config) {
+  const layout = figmaLayout(config);
   const tierByCollection = new Map();
-  for (const tier of config.tiers) {
-    const c = collections.find((x) => x.name === collectionName(tier));
-    if (c) tierByCollection.set(c.id, { tier: tier.name, collection: c });
+  for (const t of config.tiers) tierByCollection.set(collectionNameOf(config, t), t.name);
+  for (const c of specs.collections ?? []) if (c.tier) tierByCollection.set(c.name, c.tier);
+
+  const vars = specs.variables.filter((v) => tierByCollection.has(v.collection) && v.type !== "BOOLEAN");
+  const dividers = vars.filter((v) => !v.meta && isDividerName(v.name)).length;
+  const real = vars.filter((v) => v.meta || !isDividerName(v.name));
+  const keyOf = (v) => v.key ?? `${v.collection}|${v.name}`;
+
+  // Path and part of every variable.
+  const info = new Map();
+  for (const v of real) {
+    const tier = v.meta?.tier ?? tierByCollection.get(v.collection);
+    let path = v.meta?.path;
+    let part = v.meta?.part;
+    if (!path) {
+      const m = layout.shadowLayers && v.name.match(SHADOW_PART);
+      if (m) {
+        path = pathOfFigmaName(m[1]);
+        part = { layer: Number(m[2]), field: m[3] };
+      } else path = pathOfFigmaName(v.name);
+    }
+    info.set(keyOf(v), { v, tier, path, part });
   }
-  const all = (await figma.variables.getLocalVariablesAsync()).filter((v) => tierByCollection.has(v.variableCollectionId));
-  const pathById = new Map(all.map((v) => [v.id, v.getPluginData(KEY.path) || pathFromName(v.name)]));
+  const targetPath = (alias) => {
+    const t = info.get(alias.alias);
+    if (t) return { path: t.path, part: t.part };
+    const name = alias.name ?? String(alias.alias).split("|").slice(1).join("|");
+    const m = layout.shadowLayers && name.match(SHADOW_PART);
+    return m ? { path: pathOfFigmaName(m[1]), part: { layer: Number(m[2]), field: m[3] } } : { path: pathOfFigmaName(name), part: undefined };
+  };
+
   const flat = {};
   const created = [];
   const invalid = [];
-  for (const v of all) {
-    if (v.resolvedType === "BOOLEAN") continue;
-    const { tier, collection } = tierByCollection.get(v.variableCollectionId);
-    const path = pathById.get(v.id);
-    if (!v.getPluginData(KEY.path)) created.push(path);
+  const groups = new Map(); // path -> [info] (one entry, or several shadow parts)
+  for (const entry of info.values()) {
+    if (!groups.has(entry.path)) groups.set(entry.path, []);
+    groups.get(entry.path).push(entry);
+  }
+
+  const literalOf = (entry, theme) => {
+    const { v, path } = entry;
+    const raw = v.values[theme];
+    if (raw === undefined) return undefined;
+    if (raw && typeof raw === "object" && "alias" in raw) {
+      const t = targetPath(raw);
+      return `{${t.path}}`;
+    }
+    if (raw && typeof raw === "object" && "color" in raw && "opacity" in raw)
+      return { color: `{${targetPath(raw.color).path}}`, opacity: `{${targetPath(raw.opacity).path}}` };
+    const orig = v.meta?.orig?.[theme];
+    if (orig && !entry.part && sameFigmaValue(raw, orig.figma)) return orig.value;
+    if (v.meta?.form === "text") {
+      const parsed = fromText(raw);
+      if (parsed.invalid) invalid.push(path);
+      return parsed.value;
+    }
+    const type = entry.part ? (entry.part.field === "color" ? "color" : "dimension") : v.meta?.type;
+    return fromFigmaLiteral(layout, path, v.type, raw, { type, unit: v.meta?.unit, form: entry.part ? "string" : v.meta?.form });
+  };
+
+  for (const [path, entries] of groups) {
+    const first = entries[0];
+    const tier = first.tier;
+    const themes = themesOf(config, tier);
+    const isShadow = entries.some((e) => e.part);
     const valueFor = (theme) => {
-      const mode = collection.modes.find((m) => m.name === modeLabel(theme)) ?? (theme === "light" ? collection.modes[0] : null);
-      if (!mode) return undefined;
-      const raw = v.valuesByMode[mode.modeId];
-      if (raw && raw.type === "VARIABLE_ALIAS") return pathById.has(raw.id) ? `{${pathById.get(raw.id)}}` : undefined;
-      if (raw === undefined) return undefined;
-      const orig = v.getPluginData(`tk:orig:${theme}`);
-      if (orig) {
-        const { figma: imported, value } = JSON.parse(orig);
-        if (sameFigmaValue(raw, imported)) return value;
+      if (!isShadow) return literalOf(first, theme);
+      // Unchanged kit-made shadow: every part still equals what was written.
+      const origs = entries.map((e) => e.v.meta?.orig?.[theme]);
+      if (origs.every(Boolean) && entries.every((e, i) => sameFigmaValue(e.v.values[theme], origs[i].figma))) return origs[0].value;
+      const parts = entries.filter((e) => e.v.values[theme] !== undefined);
+      if (!parts.length) return undefined;
+      // All parts alias the same parts of one shadow token: an alias of that token.
+      const targets = parts.map((e) => {
+        const raw = e.v.values[theme];
+        return raw && typeof raw === "object" && "alias" in raw ? targetPath(raw) : null;
+      });
+      if (targets.every((t, i) => t && t.part && t.part.layer === parts[i].part.layer && t.part.field === parts[i].part.field && t.path === targets[0].path))
+        return `{${targets[0].path}}`;
+      const layers = [];
+      for (const e of parts) {
+        const layer = (layers[e.part.layer] ??= {});
+        layer[SHADOW_FIELDS[e.part.field]] = literalOf(e, theme);
       }
-      return fromFigmaLiteral(v, raw, invalid);
+      const ordered = layers.map((l) => (l ? Object.fromEntries(["color", "offsetX", "offsetY", "blur", "spread"].filter((k) => k in l).map((k) => [k, l[k]])) : l));
+      return ordered.length === 1 ? ordered[0] : ordered;
     };
-    // Imported variables keep their original $type (even none); new ones get one from the Figma type.
-    const type = v.getPluginData(KEY.path) ? v.getPluginData(KEY.type) || undefined : DEFAULT_TYPE[v.resolvedType];
+    const meta = first.v.meta;
+    const type = isShadow ? "shadow" : meta ? meta.type || undefined : inferType(layout, path, first.v.type);
     const item = { type, value: valueFor("light"), tier };
-    if (v.description) item.description = v.description;
-    const ext = v.getPluginData(KEY.ext);
-    if (ext) item.extensions = JSON.parse(ext);
-    const explicit = JSON.parse(v.getPluginData(KEY.themes) || "[]");
+    const description = entries.map((e) => e.v.description).find(Boolean);
+    if (description) item.description = description;
+    const ext = meta?.ext ? { ...meta.ext } : {};
+    // Scopes and visibility that differ from the layout rules are kept per token.
+    const rule = { scopes: firstRule(layout.scopes, tier, path)?.scopes ?? ["ALL_SCOPES"], hidden: firstRule(layout.hidden, tier, path)?.hidden ?? false };
+    const figmaExt = { ...(meta?.figmaExt ?? {}) };
+    if (first.v.scopes && !sameSet(first.v.scopes, rule.scopes)) figmaExt.scopes = first.v.scopes;
+    else delete figmaExt.scopes;
+    if (first.v.hidden !== undefined && first.v.hidden !== rule.hidden) figmaExt.hidden = first.v.hidden;
+    else delete figmaExt.hidden;
+    if (Object.keys(figmaExt).length) ext.figma = figmaExt;
+    if (Object.keys(ext).length) item.extensions = ext;
+    const explicit = meta?.themes ?? [];
     for (const theme of themes.slice(1)) {
       const value = valueFor(theme);
       if (value !== undefined && (explicit.includes(theme) || JSON.stringify(value) !== JSON.stringify(item.value))) (item.themes ??= {})[theme] = value;
     }
+    if (!meta) created.push(path);
     flat[path] = item;
   }
+
+  // Types of variables created in Figma follow their alias target where the category says nothing.
+  for (const [path, item] of Object.entries(flat)) {
+    if (info.get(keyOf(groups.get(path)[0].v))?.v.meta) continue;
+    const seen = new Set();
+    let target = aliasOf(item.value);
+    while (target && flat[target] && !seen.has(target)) {
+      seen.add(target);
+      if (!aliasOf(flat[target].value)) break;
+      target = aliasOf(flat[target].value);
+    }
+    const inferred = inferType(layout, path, groups.get(path)[0].v.type);
+    if (target && flat[target]?.type && (inferred === "dimension" || inferred === "string" || inferred === "color") && !category(layout, path))
+      item.type = flat[target].type;
+  }
+  return { flat, created, invalid: [...new Set(invalid)], dividers };
+}
+
+// ---- src/main.js
+// Token Kit Figma plugin (main thread). Applies and reads the Figma layout of src/core/figma-layout.mjs:
+// one collection per tier, one mode per theme, headings and divider variables, scopes and visibility.
+// Bundled with the pure-JS core by figma-plugin/build.mjs; core functions (resolveConfig, indexTree, toFlat,
+// indexFlat, checkModel, gateFindings, createBundle, validateBundle, parseColor, formatHex, toFigmaSpecs,
+// fromFigmaSpecs, figmaLayout, collectionNameOf, themesOf, modeNameOf) are in scope.
+// The export gate matches `token-kit check`: findings frozen in the bundle's baselines pass,
+// every other error or review blocks the export.
+
+const META_KEY = "tk:meta";
+const ROOT_KEY = { config: "tk:config", meta: "tk:meta", unmapped: "tk:unmapped", baselines: "tk:baselines", contracts: "tk:contracts" };
+
+figma.showUI(__html__, { width: 420, height: 560, themeColors: true });
+
+function storedConfig() {
+  const raw = figma.root.getPluginData(ROOT_KEY.config);
+  return resolveConfig(raw ? JSON.parse(raw) : {});
+}
+
+/** Root-level $extensions contracts (cssAliases, semanticAliases, componentContexts) of the imported tokens. */
+function storedContracts() {
+  const raw = figma.root.getPluginData(ROOT_KEY.contracts);
+  return raw ? JSON.parse(raw) : undefined;
+}
+
+const keyOfVariable = (v, collectionsById) => `${collectionsById.get(v.variableCollectionId)?.name}|${v.name}`;
+
+// ---------------------------------------------------------------- import
+
+/** Collection with one mode per theme; an existing collection keeps its modes and gains missing ones. */
+function ensureCollection(spec, existing) {
+  let collection = existing.find((c) => c.name === spec.name);
+  if (!collection) {
+    collection = figma.variables.createVariableCollection(spec.name);
+    collection.renameMode(collection.modes[0].modeId, spec.modes[0].name);
+  }
+  const modes = {};
+  for (const [i, { theme, name }] of spec.modes.entries()) {
+    const mode = collection.modes.find((m) => m.name === name) ?? (i === 0 ? collection.modes[0] : null);
+    modes[theme] = mode ? mode.modeId : collection.addMode(name);
+  }
+  return { collection, modes };
+}
+
+/** Literal value of a spec (following aliases), for values Figma cannot express as an alias. */
+function resolveSpec(byKey, key, theme, seen = new Set()) {
+  const spec = byKey.get(key);
+  if (!spec || seen.has(key)) return undefined;
+  seen.add(key);
+  const value = spec.values[theme] ?? spec.values.light;
+  return value && typeof value === "object" && "alias" in value ? resolveSpec(byKey, value.alias, theme, seen) : value;
+}
+
+/** Figma value of a spec literal (colours as RGBA, everything else as is). */
+const figmaValue = (type, value) => (type === "COLOR" ? parseColor(value) : value);
+
+async function importBundle(bundle) {
+  const errors = validateBundle(bundle);
+  if (errors.length) return { ok: false, errors };
+  const config = resolveConfig(bundle.config);
+  const flat = bundle.kind === "tree" ? toFlat(indexTree(bundle.tokens, config)) : bundle.tokens;
+  const specs = toFigmaSpecs(flat, config);
+  const layout = figmaLayout(config);
+
+  const existingCollections = await figma.variables.getLocalVariableCollectionsAsync();
+  const collections = new Map();
+  for (const spec of specs.collections) collections.set(spec.name, ensureCollection(spec, existingCollections));
+  const collectionsById = new Map([...collections.values()].map(({ collection }) => [collection.id, collection]));
+
+  const existing = new Map();
+  for (const v of await figma.variables.getLocalVariablesAsync()) if (collectionsById.has(v.variableCollectionId)) existing.set(keyOfVariable(v, collectionsById), v);
+
+  // Pass 1: create or retype variables, in layout order (Figma lists variables in creation order).
+  const byKey = new Map();
+  const variables = new Map();
+  for (const spec of specs.variables) {
+    const key = `${spec.collection}|${spec.name}`;
+    const { collection } = collections.get(spec.collection);
+    let v = existing.get(key);
+    if (v && v.resolvedType !== spec.type) {
+      v.remove();
+      v = null;
+    }
+    if (!v) v = figma.variables.createVariable(spec.name, collection, spec.type);
+    v.description = spec.description ?? "";
+    v.scopes = spec.scopes;
+    v.hiddenFromPublishing = spec.hidden;
+    byKey.set(key, spec);
+    variables.set(key, v);
+  }
+
+  // Pass 2: values per mode, then the metadata that makes the export lossless.
+  const broken = [];
+  for (const spec of specs.variables) {
+    const key = `${spec.collection}|${spec.name}`;
+    const v = variables.get(key);
+    const { modes } = collections.get(spec.collection);
+    for (const [theme, value] of Object.entries(spec.values)) {
+      if (value && typeof value === "object" && "alias" in value) {
+        const target = variables.get(value.alias);
+        if (target) v.setValueForMode(modes[theme], figma.variables.createVariableAlias(target));
+        else broken.push(spec.meta?.path ?? spec.name);
+      } else if (value && typeof value === "object" && "color" in value) {
+        // Colour with an aliased opacity, as Figma stores it ({ color: alias, opacity: alias }).
+        const color = variables.get(value.color.alias);
+        const opacity = variables.get(value.opacity.alias);
+        try {
+          v.setValueForMode(modes[theme], { color: figma.variables.createVariableAlias(color), opacity: figma.variables.createVariableAlias(opacity) });
+        } catch {
+          // Without that support the resolved colour is stored; the composite travels in the metadata.
+          const rgba = parseColor(resolveSpec(byKey, value.color.alias, theme) ?? "#000000");
+          const percent = (layout.percent ?? []).includes("opacity") ? 100 : 1;
+          const amount = resolveSpec(byKey, value.opacity.alias, theme);
+          if (typeof amount === "number") rgba.a = amount / percent;
+          v.setValueForMode(modes[theme], rgba);
+          spec.meta.orig[theme] = { figma: formatHex(rgba), value: flat[spec.meta.path].themes?.[theme] ?? flat[spec.meta.path].value };
+        }
+      } else v.setValueForMode(modes[theme], figmaValue(spec.type, value));
+    }
+    v.setPluginData(META_KEY, spec.meta ? JSON.stringify(spec.meta) : "");
+  }
+
+  figma.root.setPluginData(ROOT_KEY.unmapped, "");
+  figma.root.setPluginData(ROOT_KEY.config, JSON.stringify(bundle.config));
+  if (bundle.baselines) figma.root.setPluginData(ROOT_KEY.baselines, JSON.stringify(bundle.baselines));
+  const contracts = bundle.kind === "tree" ? bundle.tokens.$extensions : bundle.contracts;
+  figma.root.setPluginData(ROOT_KEY.contracts, contracts ? JSON.stringify(contracts) : "");
+  figma.root.setPluginData(ROOT_KEY.meta, JSON.stringify({ checksum: bundle.checksum, source: bundle.source, importedAt: new Date().toISOString() }));
+  const dividers = specs.variables.filter((s) => !s.meta).length;
+  return { ok: true, variables: variables.size - dividers, dividers, unmapped: 0, broken: [...new Set(broken)] };
+}
+
+// ---------------------------------------------------------------- export
+
+/** Reads the variables of the configured collections into specs (see src/core/figma-layout.mjs). */
+async function readSpecs(config) {
+  const all = await figma.variables.getLocalVariableCollectionsAsync();
+  const collections = [];
+  const modesByCollection = new Map();
+  for (const tier of config.tiers) {
+    const name = collectionNameOf(config, tier);
+    const c = all.find((x) => x.name === name);
+    if (!c) continue;
+    collections.push({ name, tier: tier.name });
+    const modes = {};
+    for (const [i, theme] of themesOf(config, tier.name).entries()) {
+      const mode = c.modes.find((m) => m.name === modeNameOf(config, tier.name, theme)) ?? (i === 0 ? c.modes[0] : null);
+      if (mode) modes[theme] = mode.modeId;
+    }
+    modesByCollection.set(c.id, { collection: c, modes });
+  }
+  const collectionsById = new Map([...modesByCollection].map(([id, { collection }]) => [id, collection]));
+  const locals = (await figma.variables.getLocalVariablesAsync()).filter((v) => modesByCollection.has(v.variableCollectionId));
+  const keyById = new Map(locals.map((v) => [v.id, keyOfVariable(v, collectionsById)]));
+
+  const aliasOfRaw = async (raw) => {
+    if (keyById.has(raw.id)) return { alias: keyById.get(raw.id) };
+    // Deleted or remote variables are not local, but their names still say what they were.
+    const target = await figma.variables.getVariableByIdAsync(raw.id);
+    return target ? { alias: `?|${target.name}`, name: target.name } : undefined;
+  };
+
+  const variables = [];
+  for (const v of locals) {
+    if (v.resolvedType === "BOOLEAN") continue;
+    const { collection, modes } = modesByCollection.get(v.variableCollectionId);
+    const values = {};
+    for (const [theme, modeId] of Object.entries(modes)) {
+      const raw = v.valuesByMode[modeId];
+      if (raw === undefined) continue;
+      if (raw && raw.type === "VARIABLE_ALIAS") {
+        const alias = await aliasOfRaw(raw);
+        if (alias) values[theme] = alias;
+      } else if (raw && typeof raw === "object" && raw.color?.type === "VARIABLE_ALIAS" && raw.opacity?.type === "VARIABLE_ALIAS") {
+        const color = await aliasOfRaw(raw.color);
+        const opacity = await aliasOfRaw(raw.opacity);
+        if (color && opacity) values[theme] = { color, opacity };
+      } else values[theme] = v.resolvedType === "COLOR" ? formatHex(raw) : raw;
+    }
+    const meta = v.getPluginData(META_KEY);
+    variables.push({
+      key: keyById.get(v.id),
+      collection: collection.name,
+      name: v.name,
+      type: v.resolvedType,
+      values,
+      scopes: v.scopes,
+      hidden: v.hiddenFromPublishing,
+      description: v.description,
+      meta: meta ? JSON.parse(meta) : undefined,
+    });
+  }
+  return { collections, variables };
+}
+
+async function collectFlat() {
+  const config = storedConfig();
+  const { flat, created, invalid } = fromFigmaSpecs(await readSpecs(config), config);
   const unmapped = JSON.parse(figma.root.getPluginData(ROOT_KEY.unmapped) || "{}");
   for (const [path, item] of Object.entries(unmapped)) if (!(path in flat)) flat[path] = item;
   return { config, flat, created, invalid };

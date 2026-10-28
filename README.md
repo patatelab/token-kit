@@ -58,16 +58,16 @@ Voreingestellt ist die Token-Richtlinie: RAW-Wert → Primitive → Semantic →
 
 | Ebene | Figma | Namensschema | Beispiel |
 | --- | --- | --- | --- |
-| Primitive | Foundation Collection | Category-Property-Variant-Scale | `color-blue-500` = `#2B7FFF` |
-| Semantic | Alias Collection | Category-Property-Variant-Scale | `color-primary-default` → `{color.lemon.500}` |
-| Component | Control Collection | Component-Property-Variant-State-Scale | `button-bg-primary-hover` → `{color.primary.strong}` |
+| Primitive | Primitive | Category-Property-Variant-Scale | `color-blue-500` = `#2B7FFF` |
+| Semantic | Semantic | Category-Property-Variant-Scale | `color-primary-default` → `{color.lemon.500}` |
+| Component | Components | Component-Property-Variant-State-Scale | `button-bg-primary-hover` → `{color.primary.strong}` |
 
 Im Token-File ist jeder Namensteil eine Gruppenebene; die Ebenen-Gruppen `primitive` und `semantic` zählen nicht zum Namen (`pathSkip`):
 
 ```text
 primitive.color.blue.500           #2B7FFF                   --color-blue-500         color/blue/500
-semantic.color.primary.default     {color.lemon.500}         --color-primary-default  color/primary/default
-button.bg.primary.hover            {color.primary.strong}    --button-bg-primary-hover
+semantic.color.primary.default     {color.lemon.500}         --color-primary-default  color/𝗥𝗢𝗟𝗘/primary/default
+button.bg.primary.hover            {color.primary.strong}    --button-bg-primary-hover button/bg-primary-hover
 ```
 
 Semantische Farben gliedern sich in Brand, Usage (`bg`, `text`, `border`, `icon`), Role (`primary`, `secondary`, `tertiary`) und Intent (`success`, `warning`, `error`, `info`). Skalen sind bei Primitives Zahlen (050–950, 500 = mittel), bei Semantic Wörter (`default`/`strong`/`weak`, `sm`/`md`/`lg`). Der Check prüft Ebenenkette, Kategorien (`TOKEN_NAME_STRUCTURE`) und Werte im Namen (`TOKEN_NAME_LITERAL`). Die ganze Richtlinie steht in [docs/token-contract.md](docs/token-contract.md).
@@ -99,7 +99,15 @@ Mit Copilot (Chat oder Coding Agent): `/token-export` und `/token-import` in `.g
 ## Figma
 
 1. In Figma: *Plugins → Development → Import plugin from manifest…* und `figma-plugin/manifest.json` wählen.
-2. **Bundle importieren**: legt die Collections *Foundation Collection*, *Alias Collection* und *Control Collection* mit den Modes *Light* und *Dark* an. Referenzen werden Variable-Aliase. Jeder Token wird eine Variable und ist damit pflegbar: Farben als Color, Maße und Dauern als Number (Einheit bleibt erhalten), Schriften als String. Was Figma nicht nativ kennt (Easing-Kurven, Schatten, Typografie-Komposita, `calc()`/`color-mix()`), wird eine String-Variable mit dem Wert als Text bzw. JSON, z. B. `[0.2,0,0,1]`.
+2. **Bundle importieren**: legt die Variablen so an wie in der Referenzdatei *ds-3tier-v2* ([Prüfbericht R001](docs/audits/R001-figma-ds-3tier-v2.md)):
+   - Collections *Primitive* (Mode `Mode 1`), *Semantic* (`light`, `dark`) und *Components* (`Value`).
+   - Blöcke mit fetten Überschriften als Trenner-Variablen (`𝗦𝗪𝗔𝗧𝗖𝗛𝗘𝗦/ㅤ`, `𝗗𝗜𝗠𝗘𝗡𝗦𝗜𝗢𝗡/ㅤ`, `𝗔𝗖𝗧𝗜𝗢𝗡/ㅤ` …); Semantic-Farben in den Abschnitten 𝗕𝗥𝗔𝗡𝗗, 𝗨𝗦𝗔𝗚𝗘, 𝗥𝗢𝗟𝗘, 𝗜𝗡𝗧𝗘𝗡𝗧 (`color/𝗥𝗢𝗟𝗘/primary/default`). Überschriften gehören nicht zum Token-Namen.
+   - Component-Namen mit einer Ebene nach der Komponente (`button/bg-primary-default`).
+   - Deckkraft in Prozent, Schriftstärken als Stilnamen (`Semi Bold`), Schatten als eine Variable pro Ebene und Feld (`shadow/sm/layer-0/blur`), Farbe mit verknüpfter Deckkraft.
+   - Scopes und „Hide from publishing“ nach Regeln; Abweichungen einzelner Tokens stehen in `$extensions.figma`.
+   - Referenzen werden Aliase. Was Figma nicht nativ kennt (Easing-Kurven, Typografie-Komposita, `calc()`), wird eine String-Variable mit dem Wert als Text bzw. JSON, z. B. `[0.2,0,0,1]`.
+
+   Das Layout steht in `token-kit.config.json` unter `figma` und gilt in beide Richtungen: Das Plugin liest auch Dateien, die es nicht selbst angelegt hat, z. B. die Referenzdatei (Tokens dazu in [examples/ds-3tier-v2/tokens.json](examples/ds-3tier-v2/tokens.json)).
 3. Ändern: alle Ebenen sind pflegbar, von der Palette bis zu Komponenten-Tokens. Globale Änderungen an Primitives und Semantic-Tokens wirken über die Aliase bis in die Komponenten. Komponenten-Tokens dürfen weiterhin nur Semantic-Tokens oder die eigene Familie referenzieren; das prüft der Check.
 4. **Tokens prüfen** führt dieselben Regeln aus wie `token-kit check` (ohne Quellcode-Audit) und listet Fehler und Reviews mit Regel-ID, Token und Vorschlag. Ungültiges JSON in Text-Werten ist ein Fehler (`TOKEN_FIGMA_VALUE`).
 5. **Exportieren** ist nur möglich, wenn der Check nichts Neues meldet. Wie bei `token-kit check` zählen Befunde, die in den Baselines des importierten Bundles eingefroren sind, nicht; jeder neue Fehler oder Review sperrt den Export. Das Plugin lädt dann `figma.tokens.bundle.json` herunter. In Figma neu angelegte Variablen werden als „neue Tokens, Freigabe nötig“ markiert.

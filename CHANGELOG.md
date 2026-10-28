@@ -1,5 +1,32 @@
 # Änderungen
 
+## 0.3.0 – 2026-10-28: Figma-Ausgabe nach der Referenzdatei ds-3tier-v2
+
+Die Figma-Datei *ds-3tier-v2* ist die Vorlage dafür, wie das Kit Variablen in Figma anlegt. Das Kit liest die Datei verlustfrei ein und schreibt dieselben 506 Variablen zurück (Namen, Typen, Werte, Aliase, Scopes, Sichtbarkeit). Prüfbericht: [docs/audits/R001-figma-ds-3tier-v2.md](docs/audits/R001-figma-ds-3tier-v2.md).
+
+### Figma-Layout (neu: `src/core/figma-layout.mjs`, Config-Abschnitt `figma`)
+
+| Vorher | Jetzt |
+| --- | --- |
+| Collections *Foundation/Alias/Control Collection*, Modes *Light*/*Dark* in allen | *Primitive* (`Mode 1`), *Semantic* (`light`, `dark`), *Components* (`Value`); Dark nur bei Semantic |
+| `color/primary/default` | `color/𝗥𝗢𝗟𝗘/primary/default` (Abschnitte 𝗕𝗥𝗔𝗡𝗗, 𝗨𝗦𝗔𝗚𝗘, 𝗥𝗢𝗟𝗘, 𝗜𝗡𝗧𝗘𝗡𝗧) |
+| `button/bg/primary/default` | `button/bg-primary-default` |
+| – | Trenner-Variablen mit fetten Überschriften (`𝗦𝗪𝗔𝗧𝗖𝗛𝗘𝗦/ㅤ`, `𝗔𝗖𝗧𝗜𝗢𝗡/ㅤ` …) |
+| Deckkraft 0.5 | 50 (Prozent) |
+| Schriftstärke 600 | `Semi Bold` |
+| Schatten als JSON-Text | eine Variable pro Ebene und Feld (`shadow/sm/layer-0/blur`) |
+| Scopes `ALL_SCOPES`, alles veröffentlicht | Scopes und „Hide from publishing“ nach Regeln; Abweichungen pro Token in `$extensions.figma` |
+| – | Farbe mit verknüpfter Deckkraft `{ "color": "{…}", "opacity": "{…}" }` |
+
+- Das Plugin liest auch Dateien, die es nicht selbst angelegt hat. Verweise auf gelöschte Variablen behalten ihren Namen und erscheinen im Check als `TOKEN_REF_MISSING`.
+- Neue Beispiel-Tokens: [examples/ds-3tier-v2/tokens.json](examples/ds-3tier-v2/tokens.json).
+- Tests gegen einen Snapshot der Datei (`test/fixtures/ds-3tier-v2.variables.tsv`, `test/figma-layout.test.mjs`).
+- Wissensbasis zur Namensgebung: [docs/knowledge/naming-tokens.md](docs/knowledge/naming-tokens.md) (Curtis 2020, mit Literaturverzeichnis).
+
+### Migration
+
+Dateien, die mit 0.2.0 importiert wurden, haben die alten Collection- und Variablennamen. Am einfachsten das Bundle in eine neue Datei importieren. Wer die alten Namen behalten will, setzt in der Config `figma.collections` (Namen und Modes) und `figma.dividers: false`.
+
 ## 0.2.0 – 2026-10-28: Token-Richtlinie übernommen
 
 Grundlage sind die fünf Richtlinien-Seiten *Design Tokens*, *RAW Value*, *Primitive Token*, *Semantic Token* und *Component Token*. Die vollständige Richtlinie steht in [docs/token-contract.md](docs/token-contract.md).

@@ -8,20 +8,38 @@ import { starterConfig, starterTree } from "./helpers.mjs";
 
 const starterBundle = () => createBundle({ kind: "tree", tokens: starterTree(), config: starterConfig() });
 
-test("import creates one collection per tier with Light/Dark modes and aliases", async () => {
+test("import creates the Figma layout: collections, modes, headings, scopes and aliases", async () => {
   const f = fakeFigma();
   const result = await f.send({ type: "import", bundle: starterBundle() });
   assert.equal(result.result.ok, true, JSON.stringify(result));
-  assert.deepEqual(f.collections.map((c) => c.name), ["Foundation Collection", "Alias Collection", "Control Collection"]);
-  assert.deepEqual(f.collections[1].modes.map((m) => m.name), ["Light", "Dark"]);
+  assert.deepEqual(f.collections.map((c) => c.name), ["Primitive", "Semantic", "Components"]);
+  assert.deepEqual(f.collections.map((c) => c.modes.map((m) => m.name)), [["Mode 1"], ["light", "dark"], ["Value"]]);
   const byName = (n) => f.all().find((v) => v.name === n);
-  assert.equal(byName("color/blue/500").resolvedType, "COLOR");
+  const plain = (x) => JSON.parse(JSON.stringify(x)); // values from the plugin's vm realm
+  const blue = byName("color/blue/500");
+  assert.equal(blue.resolvedType, "COLOR");
+  assert.equal(blue.hiddenFromPublishing, true, "primitives are hidden from publishing");
   assert.equal(byName("spacing/md").valuesByMode[f.collections[1].modes[0].modeId].type, "VARIABLE_ALIAS");
   assert.equal(result.result.unmapped, 0, "every token becomes a variable");
+  assert.deepEqual(result.result.broken, []);
+
+  // Headings and divider variables structure the panel, as in the reference file.
+  const names = f.all().map((v) => v.name);
+  assert.equal(names[0], "𝗦𝗪𝗔𝗧𝗖𝗛𝗘𝗦/ㅤ");
+  assert.ok(names.includes("color/𝗥𝗢𝗟𝗘/primary/default"), "semantic colours sit in their section");
+  assert.ok(names.indexOf("color/𝗥𝗢𝗟𝗘/ㅤ") < names.indexOf("color/𝗥𝗢𝗟𝗘/primary/default"));
+  assert.ok(names.includes("button/bg-primary-default"), "component names are joined after the component");
+  const divider = byName("𝗦𝗪𝗔𝗧𝗖𝗛𝗘𝗦/ㅤ");
+  assert.deepEqual(plain([divider.scopes, divider.hiddenFromPublishing]), [[], true]);
+  assert.deepEqual(plain(byName("spacing/md").scopes), ["ALL_SCOPES"]);
+  assert.ok(byName("space/600").scopes.includes("GAP"));
+
+  // Shadows become one variable per layer and field; opacity is shown in percent.
+  assert.equal(byName("shadow/sm/layer-0/blur").resolvedType, "FLOAT");
+  assert.equal(byName("shadow/sm/layer-0/color").resolvedType, "COLOR");
   const easing = byName("motion/easing/standard");
   assert.equal(easing.resolvedType, "STRING");
   assert.equal(easing.valuesByMode[f.collections[0].modes[0].modeId], "[0.2,0,0,1]");
-  assert.equal(byName("motion/easing/default").resolvedType, "STRING", "aliases of text tokens stay aliases");
 });
 
 test("composite values are editable as text and validated on export", async () => {
@@ -77,6 +95,7 @@ test("variables created in Figma are reported as new tokens", async () => {
   const semantic = f.collections[1];
   const target = f.all().find((v) => v.name === "space/600");
   const v = f.figma.variables.createVariable("spacing/xxl", semantic, "FLOAT");
+  v.scopes = ["GAP"];
   for (const m of semantic.modes) v.setValueForMode(m.modeId, f.figma.variables.createVariableAlias(target));
   v.description = "Hero section inset.";
   const exported = await f.send({ type: "export" });

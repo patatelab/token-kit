@@ -11,6 +11,7 @@ export function fakeFigma() {
   let id = 0;
   const collections = [];
   let variables = [];
+  const deleted = []; // removed variables stay reachable by id, as in Figma
   const messages = [];
   const figma = {
     showUI() {},
@@ -41,6 +42,8 @@ export function fakeFigma() {
           variableCollectionId: collection.id,
           resolvedType,
           description: "",
+          scopes: ["ALL_SCOPES"],
+          hiddenFromPublishing: false,
           valuesByMode: {},
           ...pluginData(),
           setValueForMode(modeId, value) {
@@ -48,6 +51,7 @@ export function fakeFigma() {
           },
           remove() {
             variables = variables.filter((x) => x !== this);
+            deleted.push(this);
           },
         };
         variables.push(v);
@@ -56,6 +60,7 @@ export function fakeFigma() {
       createVariableAlias: (v) => ({ type: "VARIABLE_ALIAS", id: v.id }),
       getLocalVariableCollectionsAsync: async () => [...collections],
       getLocalVariablesAsync: async () => [...variables],
+      getVariableByIdAsync: async (id) => variables.find((v) => v.id === id) ?? deleted.find((v) => v.id === id) ?? null,
     },
   };
   const code = readFileSync(new URL("../figma-plugin/dist/code.js", import.meta.url), "utf8");

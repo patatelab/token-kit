@@ -6,9 +6,9 @@ This project styles UI only through design tokens. `tokens/tokens.json` (W3C DTC
 
 The tier model is configured in `tiers` in `token-kit.config.json`; read it before touching tokens. The chain is RAW value → Primitive → Semantic → Component, and each token references only the next higher tier:
 
-- **Primitive** (under `primitive`, Figma "Foundation Collection") hold the RAW values: `color-blue-500`, `size-200`, `radius-500`, `opacity-500`. Never used in product code.
-- **Semantic** (under `semantic`, Figma "Alias Collection") give Primitives a meaning and carry Light/Dark: `color-text-supplementary`, `color-primary-default`, `color-error-default`, `spacing-md`, `radius-md`, `opacity-disabled`. Dark values live under `dark-mode.semantic.*`.
-- **Component** (`button.*`, `card.*`, `snackbar.*`, Figma "Control Collection") reference Semantic tokens or tokens of their own family: `button-bg-primary-default`, `button-padding-x-md`. They never override themes.
+- **Primitive** (under `primitive`, Figma collection "Primitive") hold the RAW values: `color-blue-500`, `size-200`, `radius-500`, `opacity-500`. Never used in product code.
+- **Semantic** (under `semantic`, Figma collection "Semantic") give Primitives a meaning and carry Light/Dark: `color-text-supplementary`, `color-primary-default`, `color-error-default`, `spacing-md`, `radius-md`, `opacity-disabled`. Dark values live under `dark-mode.semantic.*`.
+- **Component** (`button.*`, `card.*`, `snackbar.*`, Figma collection "Components") reference Semantic tokens or tokens of their own family: `button-bg-primary-default`, `button-padding-x-md`. They never override themes.
 
 ## When you write UI code
 

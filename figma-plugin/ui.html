@@ -88,7 +88,12 @@
         setSummary("Import abgelehnt: " + msg.result.errors.join("; "), false);
         return;
       }
-      setSummary(`Import fertig: ${msg.result.variables} Variablen.` + (msg.result.unmapped ? ` ${msg.result.unmapped} Theme-Overrides ohne Basis-Token bleiben unverändert erhalten.` : ""), true);
+      const broken = msg.result.broken ?? [];
+      setSummary(
+        `Import fertig: ${msg.result.variables} Variablen.` +
+          (broken.length ? ` ${broken.length} Verweise zeigen auf fehlende Tokens und bleiben leer: ${broken.slice(0, 5).join(", ")}${broken.length > 5 ? " …" : ""}` : ""),
+        !broken.length,
+      );
       $("findings").innerHTML = "";
       post({ type: "status" });
     }
