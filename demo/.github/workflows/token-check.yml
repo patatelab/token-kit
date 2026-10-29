@@ -1,0 +1,37 @@
+# Token conformity gate. Copied by `token-kit init` to .github/workflows/token-check.yml.
+# Fails on token errors, on open reviews above the ratchet, on stale generated files,
+# and on stale baselines. Also checks every *.tokens.bundle.json added in the PR.
+name: Token check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  tokens:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Generated files are current
+        run: npx token-kit build --check
+      - name: Baselines only shrink
+        run: npx token-kit report --check
+      - name: Model and source audit
+        run: npx token-kit check
+      - name: Check bundles added in this PR (e.g. Figma exports)
+        if: github.event_name == 'pull_request'
+        run: |
+          for f in $(git diff --name-only --diff-filter=AM origin/${{ github.base_ref }}...HEAD -- '*.tokens.bundle.json'); do
+            echo "::group::$f"
+            npx token-kit import "$f" --report "$f.report.md" || status=1
+            echo "::endgroup::"
+          done
+          exit ${status:-0}

@@ -16,3 +16,18 @@ jobs:
       - run: npm test
       - name: Figma plugin bundle is current
         run: npm run check:figma
+
+  demo:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: demo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Demo tokens conform to the current token-kit
+        run: npm run tokens:check
+      - run: npm run build

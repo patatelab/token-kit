@@ -78,6 +78,50 @@ New tokens are the last resort.
 4. **Approval of the exact list.** Each new token states tier, name parts, owner, Semantic backing (for Component tokens), Primitive backing, Light/Dark behaviour and consumers. Agents propose; they never self-authorise. `token-kit import` refuses new tokens without `--accept-new-tokens`.
 5. Semantic and Component tokens carry a `$description` (`TOKEN_DESCRIPTION_MISSING`, review).
 
+## Proposal: role tokens
+
+*Status: proposal, not yet part of the contract and not enforced. Rule IDs and config keys in this section are proposed names. Source: “Role Token Examples” (owner's PDF, 2026-10-29).*
+
+Semantic tokens name the job an element has in the content, not its value: **Category-Property-Role(-Scale)**, e.g. `color-text-headline`, `color-surface-container`, `color-border-divider`, `space-gap-content`, `size-icon-leading`, `opacity-scrim`.
+
+**Terminology.** "Role" above currently means the hierarchy `primary`/`secondary`/`tertiary` (colour area Role). With role tokens, that hierarchy is renamed **Emphasis** and "Role" means the content job. Decision needed before either is used in names.
+
+**Scale tier.** Many roles share a value, so roles reference an optional `scale` tier instead of Primitives directly. The existing word scales (`spacing-xs`–`xl`, `radius-sm`–`lg`, `opacity-*` steps) move to that tier. It is configuration only:
+
+```json
+{ "name": "scale", "match": { "roots": ["scale"] }, "references": ["primitive"], "internal": true, "themes": false }
+```
+
+Semantic then references `["scale", "primitive"]`. `primaryRoles` maps Primitive steps to Scale tokens; several roles on one Scale step are intended and not `TOKEN_ROLE_DUPLICATE`.
+
+**Vocabulary.** Roles are a controlled vocabulary per Category-Property, and the same word means the same job in every category (`headline` in `color-text-headline` and in the typography roles). Initial set, to be approved:
+
+| Category-Property | Roles |
+| --- | --- |
+| `color-text`, typography | `headline`, `subline`, `tagline`, `body`, `value`, `label`, `meta`, `helper`, `placeholder` |
+| `color-icon` | `default`, `action`, `status`, `muted` |
+| `size-icon` | `default`, `leading`, `trailing`, `status`, `action` |
+| `color-surface` | `base`, `container`, `elevated`, `overlay`, `inset` |
+| `color-border` | `divider`, `container`, `inset` |
+| `space-gap` | `content`, `action`, `section`, `inline` |
+| `space-padding` | `control`, `container`, `section`, each with `-block` / `-inline` |
+| `opacity` | `disabled`, `scrim`, `overlay`, `hover` |
+
+Proposed config: `naming.roles` per tier, keyed by Category-Property. Proposed rule `TOKEN_NAME_ROLE` (review): a Semantic name whose role part is not in the vocabulary.
+
+**Not roles.**
+
+- Directions: `space-padding-top`, `-left`, `-vertical` say nothing about purpose. Use a role plus a logical direction (`space-padding-control-inline`).
+- Numbered positions (`trailing-1`, `trailing-2`): a hidden numeric scale (`TOKEN_NAME_LITERAL`) and an element of one component. Keep them in the component family.
+- Components (`color-text-badge` → `badge-text-*`), intents (`status` vs `success`/`warning`/`error`/`info`) and emphasis (`action`, `link` vs `primary`).
+- Colour by position (`color-icon-leading`): colour roles describe meaning; positions belong to `size-icon`.
+
+**Opacity by purpose.** System-wide opacity roles (`opacity-disabled`, `opacity-scrim`, `opacity-overlay`, …) replace per-component opacity values. Split by property (`opacity-text`, `opacity-icon`) only where values actually differ.
+
+**Category names.** `size` joins the Semantic categories. One term per pair: `space` or `spacing`, `surface` or `bg` (proposed: `space`, `surface`, because `bg` names a CSS property, not a job).
+
+**Open roles stay open.** A role is added when at least three components need it ([knowledge/naming-tokens.md](knowledge/naming-tokens.md), “Don't globalize decisions prematurely”). `size-illustration`, `size-image` and `size-container` have no roles yet.
+
 ## Source audit
 
 `token-kit check` scans `source.roots` for CSS, SCSS, JSX and TSX (tests, stories and generated files excluded).

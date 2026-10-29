@@ -12,6 +12,8 @@
   "files": ["bin", "src", "schema", "starter", "copilot", "templates", "docs"],
   "engines": { "node": ">=20" },
   "scripts": {
+    "dev": "npm --prefix demo install && npm --prefix demo run dev",
+    "demo:check": "npm --prefix demo run tokens:check",
     "test": "node --test test/*.test.mjs",
     "figma:build": "node figma-plugin/build.mjs",
     "check:figma": "node figma-plugin/build.mjs --check"

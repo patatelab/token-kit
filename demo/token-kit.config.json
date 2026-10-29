@@ -1,0 +1,182 @@
+{
+  "$schema": "../schema/token-kit.config.schema.json",
+  "project": "my-react-app",
+  "tokens": "tokens/tokens.json",
+  "outDir": "src/styles/tokens",
+  "formats": [
+    "css-variables",
+    "typescript"
+  ],
+  "cssPrefix": "",
+  "tiers": [
+    {
+      "name": "primitive",
+      "label": "Primitive",
+      "match": {
+        "roots": [
+          "primitive"
+        ]
+      },
+      "references": [],
+      "literals": true,
+      "internal": true,
+      "themes": false,
+      "naming": {
+        "categories": [
+          "color",
+          "font-family",
+          "font-weight",
+          "font-size",
+          "line-height",
+          "letter-spacing",
+          "size",
+          "space",
+          "spacing",
+          "radius",
+          "border",
+          "shadow",
+          "blur",
+          "opacity",
+          "elevation",
+          "breakpoint",
+          "motion",
+          "z-index"
+        ]
+      }
+    },
+    {
+      "name": "semantic",
+      "label": "Semantic",
+      "match": {
+        "roots": [
+          "semantic"
+        ]
+      },
+      "references": [
+        "primitive"
+      ],
+      "naming": {
+        "categories": [
+          "color",
+          "spacing",
+          "radius",
+          "border-width",
+          "opacity",
+          "blur",
+          "shadow",
+          "font-family",
+          "font-size",
+          "font-weight",
+          "line-height",
+          "letter-spacing",
+          "motion",
+          "z-index",
+          "elevation",
+          "breakpoint"
+        ]
+      }
+    },
+    {
+      "name": "component",
+      "label": "Components",
+      "match": {},
+      "references": [
+        "semantic"
+      ],
+      "families": true,
+      "themes": false
+    }
+  ],
+  "themes": {
+    "dark": {
+      "root": "dark-mode",
+      "mediaQuery": "(prefers-color-scheme: dark)",
+      "selector": "[data-theme=\"dark\"]"
+    }
+  },
+  "contrastPairs": [
+    {
+      "foreground": "color.text.default",
+      "background": "color.bg.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.text.supplementary",
+      "background": "color.bg.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.text.inverse",
+      "background": "color.bg.inverse",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.primary.on-primary",
+      "background": "color.primary.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.secondary.on-secondary",
+      "background": "color.secondary.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.error.default",
+      "background": "color.bg.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.error.on-error",
+      "background": "color.error.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.success.on-success",
+      "background": "color.success.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.warning.on-warning",
+      "background": "color.warning.default",
+      "min": 4.5
+    },
+    {
+      "foreground": "color.info.on-info",
+      "background": "color.info.default",
+      "min": 4.5
+    }
+  ],
+  "requireDescriptions": [
+    "semantic",
+    "component"
+  ],
+  "source": {
+    "roots": [
+      "src"
+    ],
+    "extensions": [
+      ".css",
+      ".scss",
+      ".tsx",
+      ".jsx"
+    ],
+    "ignore": [
+      "node_modules",
+      "dist",
+      "build",
+      ".next",
+      "tokens"
+    ]
+  },
+  "baselines": {
+    "ratchet": "tokens/baselines/open-review-ratchet.json",
+    "knownErrors": "tokens/baselines/known-errors.json"
+  },
+  "primaryRoles": {
+    "space.050": "spacing.xs",
+    "space.100": "spacing.sm",
+    "space.200": "spacing.md",
+    "space.300": "spacing.lg",
+    "radius.500": "radius.md"
+  }
+}

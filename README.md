@@ -2,8 +2,23 @@
 
 Design-Tokens mit klaren Ebenen, Konformitätsprüfung, Shrink-only-Ratchet, Export/Import als Bundle, Copilot-Prompts und einem Figma-Plugin. Keine npm-Abhängigkeiten (Node ≥ 20).
 
+## Schnellstart: Demo ansehen
+
+Voraussetzungen: Git und Node.js 22 LTS (mindestens 20.19). Dann:
+
+```bash
+git clone https://github.com/patatelab/token-kit.git
+cd token-kit
+npm run dev
+```
+
+Im Browser **http://localhost:5173** öffnen: eine Startseite mit allen Tokens, Regeln und dem aktuellen Prüfergebnis. Neu dabei? Die Schritt-für-Schritt-Anleitung mit Installation von Git und Node.js und Hilfe bei Fehlern steht in [demo/README.md](demo/README.md).
+
+## Aufbau
+
 | Teil | Wo | Wofür |
 | --- | --- | --- |
+| Demo | `demo/` | Beispielprojekt mit Startseite (React + Vite), nutzt token-kit aus diesem Repo; `npm run dev` |
 | CLI `token-kit` | `bin/`, `src/node/` | `init`, `build`, `check`, `report`, `export`, `import` |
 | Check-Kern | `src/core/` | Regeln, Ratchet, Bundle-Format; reines JavaScript, läuft in Node, CI und im Figma-Plugin |
 | Beispiel-Tokens | `starter/` | nach der Token-Richtlinie: Primitive → Semantic → Component, Light/Dark, Kontrastpaare |
