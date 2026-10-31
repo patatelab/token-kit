@@ -25,7 +25,7 @@ The tier model is configured in `tiers` in `token-kit.config.json`; read it befo
    - Primitive: Category-Property-Variant-Scale, numeric scale (`color-blue-500`, `font-family-mark-pro`).
    - Semantic: Category-Property-Variant-Scale, scale as words (`color-primary-strong`, `radius-md`). Colour areas: Brand, Usage (`bg`, `text`, `border`, `icon`), Role (`primary`, `secondary`, `tertiary`), Intent (`success`, `warning`, `error`, `info`).
    - Component: Component-Property-Variant-State-Scale (`button-icon-primary-hover`), states `default`, `hover`, `pressed`, `focus`, `disabled`, sizes `sm`, `md`, `lg`.
-   - Never values, units or hex codes in names (`button-padding-16px` is wrong).
+   - Never values, units or hex codes in names, Primitives included (`button-padding-16px`, `radius-16px`, `color-hex-2b7fff` are wrong). Primitives use steps: `radius-500` = 16px.
 4. **New tokens need approval.** Propose tier, name, owner, Semantic and Primitive backing, Light/Dark behaviour and consumers (use `/token-propose`). Never add them on your own authority.
 
 Background on naming levels and principles: `docs/knowledge/naming-tokens.md`.

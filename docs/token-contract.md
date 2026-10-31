@@ -58,7 +58,9 @@ Semantic scales are words: `default`, `strong`, `weak` for intensity, `xs`–`xl
 **Component parts**: Group (optional, e.g. Action, Feedback, Navigation; usually left out), Component (`button`, `snackbar`), Property (`bg`, `text`, `border`, `icon`, `radius`, `padding-x`), Variant (`primary`, `secondary`, `tertiary`, or an intent such as `error`), State (`default`, `hover`, `pressed`, `focus`, `disabled`), Scale (`sm`, `md`, `lg`).
 
 - `TOKEN_NAME_STRUCTURE` — a Primitive or Semantic name does not start with a category of its tier (`naming.categories`).
-- `TOKEN_NAME_LITERAL` — a name encodes a value: `raw-`, `literal-`, units, hex codes everywhere; numeric scale steps (`spacing-200`, `color-text-500`) outside Primitives.
+- `TOKEN_NAME_LITERAL` — a name encodes a value, in every tier including Primitives: `raw-`, `literal-`, units (`px`, `rem`, `%`, `ms`, `deg`, `vh` …), hex codes, value prefixes (`number-60`, `factor-0-75`, `angle-180deg`, `negative-…`); numeric scale steps (`spacing-200`, `color-text-500`) outside Primitives.
+
+Primitives use steps, never values. A step is a position on its scale (`radius-500` = 16px, `color-blue-500` = #2B7FFF), not the value itself: `radius-16px`, `size-raw-24px` and `color-hex-2b7fff` are wrong. If a step happens to equal the value (`duration-200` = 200ms) that is fine, as long as the number is the position on the scale.
 
 ## Themes
 

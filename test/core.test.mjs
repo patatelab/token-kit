@@ -36,6 +36,9 @@ test("model rules catch broken chains, literals, names, cycles, themes and contr
   tree.card.padding.md.$value = "{spacing.missing}";
   tree.semantic.spacing["gutter-16px"] = { $value: "{space.200}", $description: "duplicate" };
   tree.semantic.spacing["200"] = { $value: "{space.200}", $description: "step name" };
+  tree.primitive.radius["raw-16px"] = { $value: "16px" }; // unit in a Primitive name
+  tree.primitive.size["number-60"] = { $value: "60ch" }; // value prefix
+  tree.primitive.motion.duration["raw-250ms"] = { $value: "250ms" }; // unit ms
   tree.semantic.gap = { $type: "dimension", md: { $value: "{space.100}", $description: "unknown category" } };
   tree.semantic.color.bg.default.$value = "{color.blue.500}"; // ok: semantic -> primitive
   tree.semantic.color.text.default.$value = "{color.primary.default}"; // semantic -> semantic
@@ -53,6 +56,9 @@ test("model rules catch broken chains, literals, names, cycles, themes and contr
     "TOKEN_REF_MISSING card.padding.md",
     "TOKEN_NAME_LITERAL spacing.gutter-16px",
     "TOKEN_NAME_LITERAL spacing.200",
+    "TOKEN_NAME_LITERAL radius.raw-16px",
+    "TOKEN_NAME_LITERAL size.number-60",
+    "TOKEN_NAME_LITERAL motion.duration.raw-250ms",
     "TOKEN_NAME_STRUCTURE gap.md",
     "TOKEN_ROLE_DUPLICATE spacing.gutter-16px",
     "TOKEN_REF_CYCLE color.lemon.600",

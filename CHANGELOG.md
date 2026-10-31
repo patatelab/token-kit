@@ -1,5 +1,13 @@
 # Änderungen
 
+## Unveröffentlicht – 2026-10-31: Primitiven heißen nach Stufen, nicht nach Werten
+
+Regel (Patrick): „Stufen ja, aber keine px Werte.“ Ein Primitive-Name ist eine Stufe auf seiner Skala (`radius-500` = 16px, `color-blue-500`), nie der Wert selbst.
+
+- `TOKEN_NAME_LITERAL` erkennt zusätzlich die Einheiten `ms`, `s`, `vh`, `vw`, `dvh`, `svh`, `lvh` und `pt` sowie Wert-Präfixe mit Zahl (`number-60`, `factor-0-75`, `angle-180deg`, `negative-…`). Das gilt auf allen Ebenen, auch für Primitives.
+- `docs/token-contract.md` und die Copilot-Anweisungen nennen die Regel mit Beispielen.
+- Fällt eine Stufe zufällig mit dem Wert zusammen (`duration-200` = 200ms), ist das in Ordnung, solange die Zahl die Position auf der Skala ist.
+
 ## 0.3.0 – 2026-10-28: Figma-Ausgabe nach der Referenzdatei ds-3tier-v2
 
 Die Figma-Datei *ds-3tier-v2* ist die Vorlage dafür, wie das Kit Variablen in Figma anlegt. Das Kit liest die Datei verlustfrei ein und schreibt dieselben 506 Variablen zurück (Namen, Typen, Werte, Aliase, Scopes, Sichtbarkeit). Prüfbericht: [docs/audits/R001-figma-ds-3tier-v2.md](docs/audits/R001-figma-ds-3tier-v2.md).
