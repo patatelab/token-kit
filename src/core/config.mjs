@@ -133,6 +133,9 @@ export const DEFAULT_CONFIG = {
   requireDescriptions: ["semantic", "component"],
   // Literal values a Semantic/Component token may carry without a reference.
   technicalValues: ["0", "none", "transparent", "auto", "inherit", "currentColor", "100%"],
+  // Reusable steps: a Primitive read by fewer tokens than this (but at least one) is a
+  // single case (TOKEN_STEP_SINGLE_USE, review). 0 turns the check off; 2 suits grown systems.
+  stepMinReaders: 0,
   source: {
     roots: ["src"],
     extensions: [".css", ".scss", ".tsx", ".jsx"],
@@ -160,6 +163,6 @@ export function tierByName(config, name) {
 
 /** The subset of the config that travels inside a bundle. */
 export function portableConfig(config) {
-  const { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix, figma } = config;
-  return { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix, figma };
+  const { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, stepMinReaders, cssPrefix, figma } = config;
+  return { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, stepMinReaders, cssPrefix, figma };
 }

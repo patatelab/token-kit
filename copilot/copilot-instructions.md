@@ -26,6 +26,7 @@ The tier model is configured in `tiers` in `token-kit.config.json`; read it befo
    - Semantic: Category-Property-Variant-Scale, scale as words (`color-primary-strong`, `radius-md`). Colour areas: Brand, Usage (`bg`, `text`, `border`, `icon`), Role (`primary`, `secondary`, `tertiary`), Intent (`success`, `warning`, `error`, `info`).
    - Component: Component-Property-Variant-State-Scale (`button-icon-primary-hover`), states `default`, `hover`, `pressed`, `focus`, `disabled`, sizes `sm`, `md`, `lg`.
    - Never values, units or hex codes in names, Primitives included (`button-padding-16px`, `radius-16px`, `color-hex-2b7fff` are wrong). Primitives use steps: `radius-500` = 16px.
+   - Steps are few and reused. A new Primitive needs a value several tokens share; otherwise use the nearest step. A fixed fact of one case (device width, `translate(-50%)`) stays in its role as a technical value with `$extensions.technicalValue` `{reason, origin}`, never as a new Primitive.
 4. **New tokens need approval.** Propose tier, name, owner, Semantic and Primitive backing, Light/Dark behaviour and consumers (use `/token-propose`). Never add them on your own authority.
 
 Background on naming levels and principles: `docs/knowledge/naming-tokens.md`.

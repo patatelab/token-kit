@@ -137,6 +137,9 @@ const DEFAULT_CONFIG = {
   requireDescriptions: ["semantic", "component"],
   // Literal values a Semantic/Component token may carry without a reference.
   technicalValues: ["0", "none", "transparent", "auto", "inherit", "currentColor", "100%"],
+  // Reusable steps: a Primitive read by fewer tokens than this (but at least one) is a
+  // single case (TOKEN_STEP_SINGLE_USE, review). 0 turns the check off; 2 suits grown systems.
+  stepMinReaders: 0,
   source: {
     roots: ["src"],
     extensions: [".css", ".scss", ".tsx", ".jsx"],
@@ -164,8 +167,8 @@ function tierByName(config, name) {
 
 /** The subset of the config that travels inside a bundle. */
 function portableConfig(config) {
-  const { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix, figma } = config;
-  return { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, cssPrefix, figma };
+  const { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, stepMinReaders, cssPrefix, figma } = config;
+  return { tiers, themes, primaryRoles, contrastPairs, requireDescriptions, technicalValues, stepMinReaders, cssPrefix, figma };
 }
 
 // ---- core/sha256.mjs
@@ -536,7 +539,7 @@ const RULES = {
   TOKEN_REF_MISSING: "Every reference points to an existing token.",
   TOKEN_REF_CYCLE: "References never form a cycle, in any theme.",
   TOKEN_TIER_CHAIN: "Each token references only the next higher tier (default: Component -> Semantic -> Primitive). No skipping, no foreign families.",
-  TOKEN_RAW_VALUE: "Only tiers with literals: true (default: Primitive) hold RAW values; the others reference tokens.",
+  TOKEN_RAW_VALUE: "Only tiers with literals: true (default: Primitive) hold RAW values; the others reference tokens, unless the token is a technical value ($extensions.technicalValue with reason and origin).",
   TOKEN_TYPE_MISMATCH: "An alias has the same $type as its target.",
   TOKEN_THEME_ORPHAN: "A theme override has a base (light) token.",
   TOKEN_THEME_OVERRIDE: "Tiers with themes: false (default: Component) inherit themes from the roles they reference.",
@@ -545,7 +548,8 @@ const RULES = {
   TOKEN_ROLE_DUPLICATE: "Each configured Primitive step has exactly one primary Semantic role (primaryRoles).",
   TOKEN_DESCRIPTION_MISSING: "Semantic and Component tokens carry a $description.",
   TOKEN_CONTRAST: "Configured text/background pairs meet their WCAG contrast minimum in every theme.",
-  TOKEN_CONTRACT: "$extensions contracts (semanticAliases, componentContexts) are complete and valid.",
+  TOKEN_CONTRACT: "$extensions contracts (semanticAliases, componentContexts, technicalValue) are complete and valid.",
+  TOKEN_STEP_SINGLE_USE: "A Primitive step is reused: a step with fewer readers than stepMinReaders (default 0 = off) is a single case; take the nearest step or make it a technical value.",
 };
 
 const KEY_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -667,7 +671,17 @@ function checkModel(index, config, tree = null) {
         findings.push(finding("TOKEN_TIER_CHAIN", "error", themed, `${subject.tier} -> ${target.tier} {${r}}`));
     }
     const subjectTier = config.tiers.find((t) => t.name === subject.tier);
-    if (!refs.length && !subjectTier?.literals && !technical.has(String(e.value)))
+    // A single-case fact (a device size, a geometric construction such as translate(-50%))
+    // may live in its role as a technical value with a stated reason and origin.
+    const technicalValue = (e.theme === "light" ? e : light.get(e.path) ?? e).extensions?.technicalValue;
+    if (technicalValue !== undefined && e.theme === "light") {
+      if (subjectTier?.literals)
+        findings.push(finding("TOKEN_CONTRACT", "error", e.path, "technicalValue on a tier that holds RAW values", "A Primitive is a step; only roles carry technical values."));
+      else if (!isPlainObject(technicalValue) || !technicalValue.reason || !technicalValue.origin)
+        findings.push(finding("TOKEN_CONTRACT", "error", e.path, "technicalValue needs a reason and an origin"));
+    }
+    const isTechnical = isPlainObject(technicalValue) && technicalValue.reason && technicalValue.origin && !subjectTier?.literals;
+    if (!refs.length && !subjectTier?.literals && !technical.has(String(e.value)) && !isTechnical)
       findings.push(finding("TOKEN_RAW_VALUE", "error", themed, `literal ${JSON.stringify(e.value)} in ${subject.tier} token`, `Reference a ${(subjectTier?.references ?? []).join(" or ") || "token"} token instead.`));
 
     const alias = aliasOf(e.value);
@@ -685,6 +699,18 @@ function checkModel(index, config, tree = null) {
       if (config.requireDescriptions.includes(e.tier) && !e.description)
         findings.push(finding("TOKEN_DESCRIPTION_MISSING", "review", e.path, "no $description"));
     }
+  }
+
+  // Reusable steps: a Primitive with too few readers is a single case (unread steps are options).
+  const minReaders = config.stepMinReaders ?? 0;
+  const readers = new Map();
+  for (const e of index.tokens.values())
+    for (const r of new Set(referencesWithVars(e.value))) if (!r.startsWith("var(") && r !== e.path) readers.set(r, (readers.get(r) ?? new Set()).add(e.path));
+  for (const e of light.values()) {
+    if (!config.tiers.find((t) => t.name === e.tier)?.literals) continue;
+    const by = readers.get(e.path);
+    if (by?.size && by.size < minReaders)
+      findings.push(finding("TOKEN_STEP_SINGLE_USE", "review", e.path, `only ${[...by].join(", ")} ${by.size === 1 ? "reads" : "read"} this step`, "Use the nearest existing step, or keep the value in the role as a technical value ($extensions.technicalValue)."));
   }
 
   // One primary Semantic role per configured Primitive step.

@@ -8,6 +8,15 @@ Regel (Patrick): „Stufen ja, aber keine px Werte.“ Ein Primitive-Name ist ei
 - `docs/token-contract.md` und die Copilot-Anweisungen nennen die Regel mit Beispielen.
 - Fällt eine Stufe zufällig mit dem Wert zusammen (`duration-200` = 200ms), ist das in Ordnung, solange die Zahl die Position auf der Skala ist.
 
+### Wenige, wiederverwendbare Stufen und technische Werte
+
+Regel (Patrick): „Stufen sollten wiederverwendbar sein und Kleinteiligkeit vermieden werden.“ Einzelfälle wie eine Gerätebreite sind technische Werte statt Stufen.
+
+- Jede Gruppe hat eine Skalenart: geordnet (Standard, `radius-500`), begrenzt 0–100 (`opacity-40`; die Rang-Skala `opacity-500` bleibt gültig), Wörter oder T-Shirt, aufgezählt.
+- Eine Rolle darf einen Einzelwert selbst halten, wenn sie `$extensions.technicalValue` mit `reason` und `origin` trägt. `TOKEN_RAW_VALUE` akzeptiert das. Fehlt eine Angabe oder steht der Wert auf einem Primitive, meldet `TOKEN_CONTRACT` einen Fehler.
+- Neue Prüfung `TOKEN_STEP_SINGLE_USE` (Review, standardmäßig aus): Mit `stepMinReaders` (z. B. 2) meldet sie Primitives, die zu wenige Tokens lesen. Ungelesene Stufen gelten als Optionen.
+- `docs/token-contract.md` (Abschnitt „Steps“) und die Copilot-Anweisungen beschreiben die Regel.
+
 ## 0.3.0 – 2026-10-28: Figma-Ausgabe nach der Referenzdatei ds-3tier-v2
 
 Die Figma-Datei *ds-3tier-v2* ist die Vorlage dafür, wie das Kit Variablen in Figma anlegt. Das Kit liest die Datei verlustfrei ein und schreibt dieselben 506 Variablen zurück (Namen, Typen, Werte, Aliase, Scopes, Sichtbarkeit). Prüfbericht: [docs/audits/R001-figma-ds-3tier-v2.md](docs/audits/R001-figma-ds-3tier-v2.md).

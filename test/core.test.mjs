@@ -68,6 +68,31 @@ test("model rules catch broken chains, literals, names, cycles, themes and contr
     assert.ok(found.includes(expected), `${expected} missing in\n${found.join("\n")}`);
 });
 
+test("technical values: a role may hold a single-case value with reason and origin", () => {
+  const config = starterConfig();
+  const tree = starterTree();
+  tree.card.gap.$value = "393px";
+  tree.card.gap.$extensions = { technicalValue: { reason: "Device screen width of the phone mock-up.", origin: "Only reader: the device frame." } };
+  tree.card.padding.md.$value = "12px";
+  tree.card.padding.md.$extensions = { technicalValue: { reason: "no origin" } };
+  tree.primitive.radius["500"].$extensions = { technicalValue: { reason: "x", origin: "y" } };
+  const found = rules(checkModel(indexTree(tree, config), config, tree));
+  assert.ok(!found.includes("TOKEN_RAW_VALUE card.gap"), found.join("\n"));
+  assert.ok(found.includes("TOKEN_RAW_VALUE card.padding.md"), found.join("\n"));
+  assert.ok(found.includes("TOKEN_CONTRACT card.padding.md"), found.join("\n"));
+  assert.ok(found.includes("TOKEN_CONTRACT radius.500"), found.join("\n"));
+});
+
+test("reusable steps: stepMinReaders flags Primitives with too few readers", () => {
+  const tree = starterTree();
+  const off = starterConfig();
+  assert.ok(!rules(checkModel(indexTree(tree, off), off, tree)).some((r) => r.startsWith("TOKEN_STEP_SINGLE_USE")));
+  const on = { ...starterConfig(), stepMinReaders: 2 };
+  const found = checkModel(indexTree(tree, on), on, tree).filter((f) => f.rule === "TOKEN_STEP_SINGLE_USE");
+  assert.ok(found.length > 0);
+  assert.ok(found.every((f) => f.severity === "review" && /reads this step|read this step/.test(f.message)));
+});
+
 test("the tier model is configurable: three tiers matched by prefixes", () => {
   const config = resolveConfig({
     themes: {},
