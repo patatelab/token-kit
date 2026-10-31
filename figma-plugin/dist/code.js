@@ -540,7 +540,7 @@ const RULES = {
   TOKEN_TYPE_MISMATCH: "An alias has the same $type as its target.",
   TOKEN_THEME_ORPHAN: "A theme override has a base (light) token.",
   TOKEN_THEME_OVERRIDE: "Tiers with themes: false (default: Component) inherit themes from the roles they reference.",
-  TOKEN_NAME_LITERAL: "Names describe the role, never the value (no px, hex, raw; numeric scale steps only in Primitives).",
+  TOKEN_NAME_LITERAL: "Names describe the role, never the value (no px, hex, raw; numeric scale steps only in Primitives, and a step is a position, not the value).",
   TOKEN_NAME_STRUCTURE: "Names start with a category the tier allows (naming.categories), e.g. color-, spacing-, font-size-.",
   TOKEN_ROLE_DUPLICATE: "Each configured Primitive step has exactly one primary Semantic role (primaryRoles).",
   TOKEN_DESCRIPTION_MISSING: "Semantic and Component tokens carry a $description.",
@@ -550,7 +550,8 @@ const RULES = {
 
 const KEY_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 // Names that encode a value: raw/literal leaves, units, hex codes.
-const LITERAL_NAME = /(?:^|[.-])(?:raw|literal)(?:-|$)|\d+(?:px|rem|percent|em|ch|deg)(?:$|[.-])|(?:^|[.-])hex-[0-9a-f]{3,8}(?:$|[.-])/;
+// Values in names: raw-/literal-, units, hex codes, value prefixes (number-60, factor-0-75, negative-100percent, angle-180deg).
+const LITERAL_NAME = /(?:^|[.-])(?:raw|literal)(?:-|$)|\d+(?:px|rem|percent|em|ch|deg|ms|s|vh|vw|dvh|svh|lvh|pt)(?:$|[.-])|(?:^|[.-])hex-[0-9a-f]{3,8}(?:$|[.-])|(?:^|[.-])(?:number|factor|angle|negative)-\d/;
 // Numeric scale steps (color-blue-500, size-200) belong to Primitives; roles use words (md, strong).
 const STEP_NAME = /(?:^|[.-])\d{2,}(?:$|[.-])|(?:^|[.-])(?:spacing|space|size|width|height)[.-]\d+(?:$|[.-])/;
 
