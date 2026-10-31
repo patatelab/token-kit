@@ -36,6 +36,9 @@ test("model rules catch broken chains, literals, names, cycles, themes and contr
   tree.card.padding.md.$value = "{spacing.missing}";
   tree.semantic.spacing["gutter-16px"] = { $value: "{space.200}", $description: "duplicate" };
   tree.semantic.spacing["200"] = { $value: "{space.200}", $description: "step name" };
+  tree.primitive.radius["raw-16px"] = { $value: "16px" }; // unit in a Primitive name
+  tree.primitive.size["number-60"] = { $value: "60ch" }; // value prefix
+  tree.primitive.motion.duration["raw-250ms"] = { $value: "250ms" }; // unit ms
   tree.semantic.gap = { $type: "dimension", md: { $value: "{space.100}", $description: "unknown category" } };
   tree.semantic.color.bg.default.$value = "{color.blue.500}"; // ok: semantic -> primitive
   tree.semantic.color.text.default.$value = "{color.primary.default}"; // semantic -> semantic
@@ -53,6 +56,9 @@ test("model rules catch broken chains, literals, names, cycles, themes and contr
     "TOKEN_REF_MISSING card.padding.md",
     "TOKEN_NAME_LITERAL spacing.gutter-16px",
     "TOKEN_NAME_LITERAL spacing.200",
+    "TOKEN_NAME_LITERAL radius.raw-16px",
+    "TOKEN_NAME_LITERAL size.number-60",
+    "TOKEN_NAME_LITERAL motion.duration.raw-250ms",
     "TOKEN_NAME_STRUCTURE gap.md",
     "TOKEN_ROLE_DUPLICATE spacing.gutter-16px",
     "TOKEN_REF_CYCLE color.lemon.600",
@@ -60,6 +66,31 @@ test("model rules catch broken chains, literals, names, cycles, themes and contr
     "TOKEN_CONTRAST color.primary.on-primary on color.primary.default",
   ])
     assert.ok(found.includes(expected), `${expected} missing in\n${found.join("\n")}`);
+});
+
+test("technical values: a role may hold a single-case value with reason and origin", () => {
+  const config = starterConfig();
+  const tree = starterTree();
+  tree.card.gap.$value = "393px";
+  tree.card.gap.$extensions = { technicalValue: { reason: "Device screen width of the phone mock-up.", origin: "Only reader: the device frame." } };
+  tree.card.padding.md.$value = "12px";
+  tree.card.padding.md.$extensions = { technicalValue: { reason: "no origin" } };
+  tree.primitive.radius["500"].$extensions = { technicalValue: { reason: "x", origin: "y" } };
+  const found = rules(checkModel(indexTree(tree, config), config, tree));
+  assert.ok(!found.includes("TOKEN_RAW_VALUE card.gap"), found.join("\n"));
+  assert.ok(found.includes("TOKEN_RAW_VALUE card.padding.md"), found.join("\n"));
+  assert.ok(found.includes("TOKEN_CONTRACT card.padding.md"), found.join("\n"));
+  assert.ok(found.includes("TOKEN_CONTRACT radius.500"), found.join("\n"));
+});
+
+test("reusable steps: stepMinReaders flags Primitives with too few readers", () => {
+  const tree = starterTree();
+  const off = starterConfig();
+  assert.ok(!rules(checkModel(indexTree(tree, off), off, tree)).some((r) => r.startsWith("TOKEN_STEP_SINGLE_USE")));
+  const on = { ...starterConfig(), stepMinReaders: 2 };
+  const found = checkModel(indexTree(tree, on), on, tree).filter((f) => f.rule === "TOKEN_STEP_SINGLE_USE");
+  assert.ok(found.length > 0);
+  assert.ok(found.every((f) => f.severity === "review" && /reads this step|read this step/.test(f.message)));
 });
 
 test("the tier model is configurable: three tiers matched by prefixes", () => {

@@ -26,7 +26,7 @@ Component   snackbar-bg-error     button-radius-md    button-opacity-disabled   
 The tier model is configuration (`tiers` in `token-kit.config.json`), not code. A token belongs to the first tier whose `match` fits (`roots`, `prefixes`, `paths`, `literal`); each tier says which tiers it may reference. Tier flags: `literals` (may hold RAW values), `families`, `internal` (never read by product code), `themes: false` (inherits themes), `allowPrefixes`, `naming.categories`.
 
 - `TOKEN_TIER_CHAIN` — a reference the tier model does not allow (skipping a tier, a Primitive referencing a Primitive, a Component referencing a Primitive).
-- `TOKEN_RAW_VALUE` — a RAW value outside the Primitive tier (except `technicalValues` such as `0`, `none`, `transparent`).
+- `TOKEN_RAW_VALUE` — a RAW value outside the Primitive tier (except `technicalValues` such as `0`, `none`, `transparent`, and roles marked as technical values, see [Steps](#steps-few-reusable-one-scale-type-per-group)).
 - `TOKEN_REF_MISSING`, `TOKEN_REF_CYCLE` — checked across all tokens and every effective theme, including composite values and `var(--…)` inside values.
 - `TOKEN_TYPE_MISSING`, `TOKEN_TYPE_MISMATCH` (review) — every token has a type; an alias matches its target's type.
 
@@ -58,7 +58,31 @@ Semantic scales are words: `default`, `strong`, `weak` for intensity, `xs`–`xl
 **Component parts**: Group (optional, e.g. Action, Feedback, Navigation; usually left out), Component (`button`, `snackbar`), Property (`bg`, `text`, `border`, `icon`, `radius`, `padding-x`), Variant (`primary`, `secondary`, `tertiary`, or an intent such as `error`), State (`default`, `hover`, `pressed`, `focus`, `disabled`), Scale (`sm`, `md`, `lg`).
 
 - `TOKEN_NAME_STRUCTURE` — a Primitive or Semantic name does not start with a category of its tier (`naming.categories`).
-- `TOKEN_NAME_LITERAL` — a name encodes a value: `raw-`, `literal-`, units, hex codes everywhere; numeric scale steps (`spacing-200`, `color-text-500`) outside Primitives.
+- `TOKEN_NAME_LITERAL` — a name encodes a value, in every tier including Primitives: `raw-`, `literal-`, units (`px`, `rem`, `%`, `ms`, `deg`, `vh` …), hex codes, value prefixes (`number-60`, `factor-0-75`, `angle-180deg`, `negative-…`); numeric scale steps (`spacing-200`, `color-text-500`) outside Primitives.
+
+Primitives use steps, never values. A step is a position on its scale (`radius-500` = 16px, `color-blue-500` = #2B7FFF), not the value itself: `radius-16px`, `size-raw-24px` and `color-hex-2b7fff` are wrong. If a step happens to equal the value (`duration-200` = 200ms) that is fine, as long as the number is the position on the scale.
+
+### Steps: few, reusable, one scale type per group
+
+Background: [knowledge/naming-tokens.md](knowledge/naming-tokens.md) (Curtis 2020, scale modifiers).
+
+A step is a place on a scale that several tokens use. A value that only one token needs is no step.
+
+- **One scale type per group.** Pick the type that fits the value:
+  - *ordered* (default): positions in hundreds with gaps for later steps (`radius-500`, `size-200`, `duration-300`);
+  - *bounded*: a share from 0 to 100, where the number may be the share (`opacity-40`, `alpha-20`); the default rank scale (`opacity-500`) stays valid;
+  - *T-shirt or words* for a short set (`sm`, `md`, `lg`; `tight`, `snug`, `loose`);
+  - *enumerated* for a fixed set of options (angles `0`, `45`, `90` …).
+- **Few steps.** Values that differ by less than people can see go to the nearest step (for example opacity on a 5-point grid). Aligning a value is a visible change and needs the owner's approval.
+- **Single cases are technical values.** A fixed fact of one case (a device screen width, a simulation input, a geometric construction such as `translate(-50%)`) stays in its Semantic or Component role as a RAW value with `$extensions.technicalValue` `{ "reason": …, "origin": … }`. `TOKEN_RAW_VALUE` accepts it. A Primitive never carries a technical value.
+
+```json
+"device-frame": { "screen-width": { "$type": "dimension", "$value": "393px",
+  "$extensions": { "technicalValue": { "reason": "Screen width of the phone mock-up; fixed by the device.", "origin": "Only reader: the device frame." } } } }
+```
+
+- `TOKEN_CONTRACT` — a `technicalValue` without `reason` or `origin`, or one on a Primitive.
+- `TOKEN_STEP_SINGLE_USE` (review, off by default) — with `stepMinReaders` (2 suits a grown system), a Primitive read by fewer tokens is a single case: take the nearest step or make it a technical value. Unread steps are options and are not flagged.
 
 ## Themes
 
